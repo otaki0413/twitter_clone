@@ -4,40 +4,44 @@ import re
 from django import forms
 from django.contrib.auth import get_user_model
 
+from allauth.account.forms import SignupForm
+
+
+# カスタムユーザー取得
 CustomUser = get_user_model()
 
 
-class SignupForm(forms.ModelForm):
-    """サインアップ用のフォーム"""
+class CustomSignupForm(SignupForm):
+    """カスタムサインアップフォーム"""
+
+    # 追加対象のフィールド
+    tel_number = forms.CharField(max_length=15)
+    birth_date = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}))
 
     class Meta:
         model = CustomUser
-        fields = [CustomUser.USERNAME_FIELD] + CustomUser.REQUIRED_FIELDS
-
-    # MEMO: clean_birth_date()内だと、日付フォーマットのバリデーションがかけられなかったので、フィールドレベルで指定している
-    birth_date = forms.DateField(
-        input_formats=["%Y-%m-%d"],  # YYYY-MM-DD形式
-        error_messages={"invalid": "YYYY-MM-DD形式で入力してください。"},
-    )
 
     def __init__(self, *args, **kwargs):
+        # 親クラスのinit呼び出す
         super().__init__(*args, **kwargs)
+
+        # 各フィールドにBootstrap適用
         for field in self.fields.values():
             field.widget.attrs["class"] = "form-control"
 
+        # プレースホルダーを空にする
+        self.fields["username"].widget.attrs["placeholder"] = ""
+        self.fields["email"].widget.attrs["placeholder"] = ""
+        self.fields["password1"].widget.attrs["placeholder"] = ""
+
     def clean_username(self):
         value = self.cleaned_data["username"]
-        errors = []
         # 一意性チェック
         if CustomUser.objects.filter(username=value).exists():
-            errors.append("このユーザー名は既に使用されています。")
+            raise forms.ValidationError("このユーザー名は既に使用されています。")
         # 文字数チェック
         if len(value) < 3:
-            errors.append(
-                "%(min_length)s文字以上で入力してください。" % {"min_length": 3}
-            )
-        if errors:
-            raise forms.ValidationError(errors)
+            raise forms.ValidationError("3文字以上で入力してください。")
         return value
 
     def clean_email(self):
@@ -47,30 +51,38 @@ class SignupForm(forms.ModelForm):
             raise forms.ValidationError("このメールアドレスは既に使用されています。")
         return value
 
+    def clean_password1(self):
+        value = self.cleaned_data["password1"]
+        # 必要があればバリデーション追加
+        return value
+
     def clean_tel_number(self):
         value = self.cleaned_data["tel_number"]
-        errors = []
         # 正規表現チェック
         if not re.match(r"^\d+$", value):
-            errors.append("数字のみで入力してください。")
+            raise forms.ValidationError("数字のみで入力してください。")
         # 文字数チェック
         if len(value) < 10 or len(value) > 15:
-            errors.append("10文字以上15文字以内で入力してください。")
-        if errors:
-            raise forms.ValidationError(errors)
+            raise forms.ValidationError("10文字以上15文字以内で入力してください。")
         return value
 
     def clean_birth_date(self):
-        value = self.cleaned_data["birth_date"]
-        errors = []
+        value = self.cleaned_data["birth_date"]  # <class 'datetime.date'>
         # 未来の日付チェック
-        today = datetime.today().date()
-        if value > today:
-            errors.append("未来の日付はいけません。正しい日付を入力してください。")
-        if errors:
-            raise forms.ValidationError(errors)
+        if value > datetime.today().date():
+            raise forms.ValidationError(
+                "未来の日付はいけません。正しい日付を入力してください。"
+            )
         return value
 
     def clean(self):
-        # 親の clean() を明示的に呼び出して、モデルレベルのユニーク制約を自動バリデーションする
-        super().clean()
+        cleaned_data = super().clean()
+        return cleaned_data
+
+    def save(self, request):
+        # SignupFormのsaveメソッド呼び出す、内部的にadapterのsave_userが実行されている
+        user = super().save(request)
+        # user.tel_number = self.cleaned_data.get("tel_number")
+        # user.birth_date = self.cleaned_data.get("birth_date")
+        # user.save()
+        return user

@@ -29,8 +29,6 @@ class CustomUser(AbstractUser, AbstractCommon):
     website = models.CharField("ウェブサイト", max_length=255, blank=True)
     login_count = models.IntegerField("ログイン回数", default=0)
 
-    REQUIRED_FIELDS = ["email", "tel_number", "birth_date"]
-
     def __str__(self):
         return self.username
 

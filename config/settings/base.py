@@ -41,6 +41,8 @@ AUTHENTICATION_BACKENDS = (
 
 SITE_ID = 1
 
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
 ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
@@ -65,7 +67,28 @@ WSGI_APPLICATION = "config.wsgi.application"
 # --------------------
 # Authentication
 # --------------------
+# カスタムユーザーモデルの設定
 AUTH_USER_MODEL = "accounts.CustomUser"
+# サインアップフォームの設定
+ACCOUNT_FORMS = {"signup": "accounts.forms.CustomSignupForm"}
+# サインアップ時のアダプターの設定
+ACCOUNT_ADAPTER = "accounts.adapter.AccountAdapter"
+# サインアップ・ログイン後のリダイレクト先URL
+LOGIN_REDIRECT_URL = "accounts:hoge"
+# ユーザー認証にメールアドレスを使用
+ACCOUNT_AUTHENTICATION_METHOD = "email"
+# ユーザー登録にユーザー名を必須にする
+ACCOUNT_USERNAME_REQUIRED = True
+# ユーザー登録にメールアドレスを必須にする
+ACCOUNT_EMAIL_REQUIRED = True
+# パスワードの入力を1回にする
+ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = False
+# 認証済みユーザーのリダイレクトを防止させる
+ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = False
+# メールの確認を無効化
+ACCOUNT_EMAIL_VERIFICATION = "none"
+# ユーザー登録後、メールアドレスに確認メールが送信される
+ACCOUNT_EMAIL_VERIFICATION = "none"
 
 
 # --------------------
