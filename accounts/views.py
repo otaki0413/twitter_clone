@@ -1,8 +1,6 @@
 from django.shortcuts import render, redirect
-from django.urls import reverse_lazy
 from django.views.generic.base import TemplateView
 from django.contrib import messages
-
 
 from allauth.account.views import SignupView, LoginView
 
@@ -18,9 +16,6 @@ class CustomSignupView(SignupView):
         )
         return response
 
-    def get_success_url(self):
-        return reverse_lazy("accounts:home")
-
 
 class CustomLoginView(LoginView):
     """カスタムログインビュー"""
@@ -29,13 +24,12 @@ class CustomLoginView(LoginView):
         response = super().form_valid(form)
         return response
 
-    def get_success_url(self):
-        return reverse_lazy("accounts:home")
-
 
 class HomeView(TemplateView):
     template_name = "account/home.html"
 
-
-class LogoutView:
-    pass
+    def get(self, *args, **kwargs):
+        # セッションが存在しない場合、ログイン画面へリダイレクト
+        if self.request.session.session_key is None:
+            return redirect("accounts:login")
+        return super().get(*args, **kwargs)
