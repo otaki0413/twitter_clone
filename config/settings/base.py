@@ -79,6 +79,8 @@ ACCOUNT_FORMS = {
 ACCOUNT_ADAPTER = "accounts.adapter.AccountAdapter"
 # サインアップ・ログイン後のリダイレクト先URL
 LOGIN_REDIRECT_URL = "accounts:home"
+# ログアウト時のリダイレクト先URL
+ACCOUNT_LOGOUT_REDIRECT_URL = "accounts:login"
 # ユーザー認証にメールアドレスを使用
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 # ユーザー登録にユーザー名を必須にする
@@ -89,10 +91,8 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = False
 # 認証済みユーザーのリダイレクトを防止させる
 ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = False
-# メールの確認を無効化
-ACCOUNT_EMAIL_VERIFICATION = "none"
-# ユーザー登録後、メールアドレスに確認メールが送信される
-ACCOUNT_EMAIL_VERIFICATION = "none"
+# ユーザー登録時に確認メールを送信するが、確認を必要としない
+ACCOUNT_EMAIL_VERIFICATION = "optional"
 # 認証情報をセッションに保存しない
 ACCOUNT_SESSION_REMEMBER = True
 
