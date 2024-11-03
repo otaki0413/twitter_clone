@@ -69,12 +69,15 @@ WSGI_APPLICATION = "config.wsgi.application"
 # --------------------
 # カスタムユーザーモデルの設定
 AUTH_USER_MODEL = "accounts.CustomUser"
-# サインアップフォームの設定
-ACCOUNT_FORMS = {"signup": "accounts.forms.CustomSignupForm"}
+# サインアップ・ログインフォームの設定
+ACCOUNT_FORMS = {
+    "signup": "accounts.forms.CustomSignupForm",
+    "login": "accounts.forms.CustomLoginForm",
+}
 # サインアップ時のアダプターの設定
 ACCOUNT_ADAPTER = "accounts.adapter.AccountAdapter"
 # サインアップ・ログイン後のリダイレクト先URL
-LOGIN_REDIRECT_URL = "accounts:hoge"
+LOGIN_REDIRECT_URL = "accounts:home"
 # ユーザー認証にメールアドレスを使用
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 # ユーザー登録にユーザー名を必須にする
@@ -89,6 +92,8 @@ ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = False
 ACCOUNT_EMAIL_VERIFICATION = "none"
 # ユーザー登録後、メールアドレスに確認メールが送信される
 ACCOUNT_EMAIL_VERIFICATION = "none"
+# 認証情報をセッションに保存しない
+ACCOUNT_SESSION_REMEMBER = True
 
 
 # --------------------

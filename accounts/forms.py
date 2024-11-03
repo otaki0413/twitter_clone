@@ -4,7 +4,7 @@ import re
 from django import forms
 from django.contrib.auth import get_user_model
 
-from allauth.account.forms import SignupForm
+from allauth.account.forms import SignupForm, LoginForm
 
 
 # カスタムユーザー取得
@@ -17,9 +17,6 @@ class CustomSignupForm(SignupForm):
     # 追加対象のフィールド
     tel_number = forms.CharField(max_length=15)
     birth_date = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}))
-
-    class Meta:
-        model = CustomUser
 
     def __init__(self, *args, **kwargs):
         # 親クラスのinit呼び出す
@@ -86,3 +83,37 @@ class CustomSignupForm(SignupForm):
         # user.birth_date = self.cleaned_data.get("birth_date")
         # user.save()
         return user
+
+
+class CustomLoginForm(LoginForm):
+    """カスタムログインフォーム"""
+
+    def __init__(self, *args, **kwargs):
+        # 親クラスのinit呼び出す
+        super().__init__(*args, **kwargs)
+
+        # 各フィールドにBootstrap適用
+        for field in self.fields.values():
+            field.widget.attrs["class"] = "form-control"
+
+        # プレースホルダーを空にする
+        self.fields["login"].widget.attrs["placeholder"] = ""
+        self.fields["password"].widget.attrs["placeholder"] = ""
+
+    def clean_login(self):
+        value = self.cleaned_data["login"]
+        # DB存在チェック
+        if not CustomUser.objects.filter(email=value).exists():
+            raise forms.ValidationError("未登録のメールアドレスです。")
+        return value
+
+    def clean_password(self):
+        value = self.cleaned_data["password"]
+        return value
+
+    def clean(self):
+        cleaned_data = super().clean()
+        return cleaned_data
+
+    def login(self, *args, **kwargs):
+        return super().login(*args, **kwargs)

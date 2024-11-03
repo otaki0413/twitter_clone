@@ -6,6 +6,6 @@ app_name = "accounts"
 
 urlpatterns = [
     path("signup/", views.CustomSignupView.as_view(), name="signup"),
-    # path("login/", views.CustomLoginView.as_view(), name="login"),
-    path("hoge/", views.HogeView.as_view(), name="hoge"),
+    path("login/", views.CustomLoginView.as_view(), name="login"),
+    path("home/", views.HogeView.as_view(), name="home"),
 ]
