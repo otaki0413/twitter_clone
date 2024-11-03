@@ -1,12 +1,15 @@
 {% extends "base.html" %}
 
-{% block title %}会員登録画面{% endblock title %}
+{% block title %}ユーザー登録画面{% endblock title %}
 
 {% block content %}
 <div class="container">
   <header class="d-flex align-items-center justify-content-between py-4 mb-4 border-bottom">
     <div>
-      <span class="fs-4 fw-bold">会員登録画面</span>
+      <span class="fs-4 fw-bold">ユーザー登録画面</span>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url "accounts:login" %}" class="btn btn-dark" role="button">ログイン</a>
     </div>
   </header>
   <div class="mx-auto" style="max-width: 480px;">
@@ -69,18 +72,5 @@
       </div>
       <button type="submit" class="w-100 btn btn-primary">登録する</button>
     </form>
-    {% comment "" %}
-    {% if form.errors %}
-    <div class="alert alert-danger">
-      <ul>
-        {% for field, errors in form.errors.items %}
-        {% for error in errors %}
-        <li>{{ field }}: {{ error }}</li>
-        {% endfor %}
-        {% endfor %}
-      </ul>
-    </div>
-    {% endif %}
-    {% endcomment %}
   </div>
 {% endblock content %}
