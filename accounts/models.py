@@ -21,8 +21,8 @@ class CustomUser(AbstractUser, AbstractCommon):
 
     email = models.EmailField("メールアドレス", unique=True, null=False, blank=False)
     description = models.TextField("自己紹介", blank=True)
-    tel_number = models.CharField("電話番号", null=False, max_length=15)
-    birth_date = models.DateField("生年月日", null=False)
+    tel_number = models.CharField("電話番号", max_length=15, null=True, blank=True)
+    birth_date = models.DateField("生年月日", null=True, blank=True)
     icon_image = models.ImageField("アイコン画像", upload_to="", blank=True)
     header_image = models.ImageField("ヘッダー画像", upload_to="", blank=True)
     location = models.CharField("場所", max_length=100, blank=True)
