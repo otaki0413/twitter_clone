@@ -49,7 +49,7 @@
         {% endif %}
       </div>
       <div class="form-group mb-3">
-        <label for="{{ form.tel_number.id_for_label }}" class="form-label">電話番号</label>
+        <label for="{{ form.tel_number.id_for_label }}" class="form-label">電話番号（任意）</label>
         {{ form.tel_number }}
         {% if form.tel_number.errors %}
           <div class="text-danger">
@@ -60,7 +60,7 @@
         {% endif %}
       </div>
       <div class="form-group mb-3">
-        <label for="{{ form.birth_date.id_for_label }}" class="form-label">生年月日</label>
+        <label for="{{ form.birth_date.id_for_label }}" class="form-label">生年月日（任意）</label>
         {{ form.birth_date }}
         {% if form.birth_date.errors %}
           <div class="text-danger">
