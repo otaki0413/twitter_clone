@@ -96,6 +96,8 @@ ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = False
 ACCOUNT_EMAIL_VERIFICATION = "optional"
 # 認証情報をセッションに保存しない
 ACCOUNT_SESSION_REMEMBER = True
+# GETリクエストによる認証を可能にする（MEMO:ただしセキュリティ的には本来POSTでやるべき）
+SOCIALACCOUNT_LOGIN_ON_GET = True
 
 
 # --------------------

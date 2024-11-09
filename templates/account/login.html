@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "base.html" %} {% load socialaccount %}
 
 {% block title %}ログイン画面{% endblock title %}
 
@@ -42,9 +42,9 @@
 
     <hr class="my-3">
 
-    <button type="submit" class="btn btn-dark w-100">
+    <a href="{% provider_login_url "github" process="login" %}" class="btn btn-dark w-100" role="button">
       <i class="bi bi-github"></i>
-      <span class="ms-2">GitHubでログイン</span>
-    </button>
+      <span> GitHubでログイン</span>
+    </a>
   </div>
 {% endblock content %}
