@@ -42,9 +42,13 @@
 
     <hr class="my-3">
 
-    <a href="{% provider_login_url "github" process="login" %}" class="btn btn-dark w-100" role="button">
-      <i class="bi bi-github"></i>
-      <span> GitHubでログイン</span>
-    </a>
+    <form action="{% provider_login_url "github" process="login" %}" method="POST">
+    {% csrf_token %}
+      <button type="submit" class="btn btn-dark w-100">
+        <i class="bi bi-github"></i>
+        <span> GitHubでログイン</span>
+      </button>
+    </form>
+
   </div>
 {% endblock content %}
