@@ -15,8 +15,10 @@ class CustomSignupForm(SignupForm):
     """カスタムサインアップフォーム"""
 
     # 追加対象のフィールド
-    tel_number = forms.CharField(max_length=15)
-    birth_date = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}))
+    tel_number = forms.CharField(max_length=15, required=False)
+    birth_date = forms.DateField(
+        widget=forms.DateInput(attrs={"type": "date"}), required=False
+    )
 
     def __init__(self, *args, **kwargs):
         # 親クラスのinit呼び出す
@@ -55,22 +57,26 @@ class CustomSignupForm(SignupForm):
 
     def clean_tel_number(self):
         value = self.cleaned_data["tel_number"]
-        # 正規表現チェック
-        if not re.match(r"^\d+$", value):
-            raise forms.ValidationError("数字のみで入力してください。")
-        # 文字数チェック
-        if len(value) < 10 or len(value) > 15:
-            raise forms.ValidationError("10文字以上15文字以内で入力してください。")
+        if value:
+            # 正規表現チェック
+            if not re.match(r"^\d+$", value):
+                raise forms.ValidationError("数字のみで入力してください。")
+            # 文字数チェック
+            if len(value) < 10 or len(value) > 15:
+                raise forms.ValidationErrorationError(
+                    "10文字以上15文字以内で入力してください。"
+                )
         return value
 
     def clean_birth_date(self):
         value = self.cleaned_data["birth_date"]  # <class 'datetime.date'>
-        # 未来の日付チェック
-        if value > datetime.today().date():
-            raise forms.ValidationError(
-                "未来の日付はいけません。正しい日付を入力してください。"
-            )
-        return value
+        if value:
+            # 未来の日付チェック
+            if value > datetime.today().date():
+                raise forms.ValidationError(
+                    "未来の日付はいけません。正しい日付を入力してください。"
+                )
+            return value
 
     def clean(self):
         cleaned_data = super().clean()

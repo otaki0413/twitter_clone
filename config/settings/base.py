@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
+    "allauth.socialaccount.providers.github",
 ]
 
 MIDDLEWARE = [
@@ -95,6 +96,8 @@ ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = False
 ACCOUNT_EMAIL_VERIFICATION = "optional"
 # 認証情報をセッションに保存しない
 ACCOUNT_SESSION_REMEMBER = True
+# GETリクエストによる認証開始をさせない
+SOCIALACCOUNT_LOGIN_ON_GET = False
 
 
 # --------------------
