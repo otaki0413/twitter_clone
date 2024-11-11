@@ -80,7 +80,7 @@ ACCOUNT_FORMS = {
 # サインアップ時のアダプターの設定
 ACCOUNT_ADAPTER = "accounts.adapter.AccountAdapter"
 # サインアップ・ログイン後のリダイレクト先URL
-LOGIN_REDIRECT_URL = "accounts:home"
+LOGIN_REDIRECT_URL = "/"
 # ログアウト時のリダイレクト先URL
 ACCOUNT_LOGOUT_REDIRECT_URL = "accounts:login"
 # ユーザー認証にメールアドレスを使用

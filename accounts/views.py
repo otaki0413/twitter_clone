@@ -1,5 +1,4 @@
 from django.shortcuts import render, redirect
-from django.views.generic.base import TemplateView
 from django.contrib import messages
 
 from allauth.account.views import SignupView, LoginView
@@ -23,13 +22,3 @@ class CustomLoginView(LoginView):
     def form_valid(self, form):
         response = super().form_valid(form)
         return response
-
-
-class HomeView(TemplateView):
-    template_name = "account/home.html"
-
-    def get(self, *args, **kwargs):
-        # セッションが存在しない場合、ログイン画面へリダイレクト
-        if self.request.session.session_key is None:
-            return redirect("accounts:login")
-        return super().get(*args, **kwargs)
