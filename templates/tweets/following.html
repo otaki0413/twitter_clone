@@ -10,32 +10,8 @@
   {% include "tweets/_tweetform.html" %}
 </div>
 <div>
- {% for tweet in tweet_list  %}
-    <div class="p-2 border-bottom border-secondary">
-      <div class="d-flex align-items-start">
-        <!-- TODO:ユーザーのプロフィール画像に変更する -->
-        <img
-          src="https://github.com/mdo.png"
-          alt="ユーザーイメージ"
-          width="40"
-          height="40"
-          class="rounded-circle me-2"
-        />
-        <div class="flex-grow-1">
-          <div class="d-flex align-items-center gap-1">
-            <div class="fw-bold">{{ tweet.user.username }}</div>
-            <small class="text-secondary">
-              @{{ tweet.user.username }}・{{ tweet.created_at|date:"m月d日 H:i" }}
-            </small>
-          </div>
-          <div>{{ tweet.content }}</div>
-          <!-- 投稿画像があれば表示 -->
-          {% if tweet.resized_image_url %}
-            <img src="{{ tweet.resized_image_url }}" alt="投稿画像}">
-          {% endif %}
-        </div>
-      </div>
-    </div>
+  {% for tweet in tweet_list  %}
+    {% include "tweets/_tweet.html" with tweet=tweet %}
   {% endfor %}
 </div>
 {% endblock content %}
