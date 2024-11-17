@@ -1,10 +1,13 @@
 from django.views.generic import ListView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse_lazy
+
 
 from .models import Tweet
 from accounts.models import FollowRelation
 
 
-class TimelineView(ListView):
+class TimelineView(LoginRequiredMixin, ListView):
     """おすすめのツイート一覧ビュー"""
 
     model = Tweet
@@ -13,6 +16,7 @@ class TimelineView(ListView):
     queryset = Tweet.objects.prefetch_related("user")
     ordering = "-created_at"
     paginate_by = 2
+    login_url = reverse_lazy("accounts:login")
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -31,12 +35,13 @@ class TimelineView(ListView):
     #     return super().get(*args, **kwargs)
 
 
-class FollowingTweetListView(ListView):
+class FollowingTweetListView(LoginRequiredMixin, ListView):
     """フォロー中のツイート一覧ビュー"""
 
     model = Tweet
     template_name = "tweets/following.html"
     context_object_name = "tweet_list"
+    login_url = reverse_lazy("accounts:login")
 
     def get_queryset(self):
         # ログインユーザ取得

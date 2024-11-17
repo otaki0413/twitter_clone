@@ -98,8 +98,8 @@ ACCOUNT_USERNAME_REQUIRED = True
 ACCOUNT_EMAIL_REQUIRED = True
 # パスワードの入力を1回にする
 ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = False
-# 認証済みユーザーのリダイレクトを防止させる
-ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = False
+# 認証済みユーザがログイン/サインアップページにアクセスすると、LOGIN_REDIRECT_URLにリダイレクトさせる
+ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = True
 # ユーザー登録時に確認メールを送信するが、確認を必要としない
 ACCOUNT_EMAIL_VERIFICATION = "optional"
 # 認証情報をセッションに保存しない
