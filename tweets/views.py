@@ -1,7 +1,9 @@
 from django.shortcuts import render, redirect
 from django.views.generic import ListView
+from django.contrib.auth import get_user_model
 
 from .models import Tweet
+from accounts.models import CustomUser, FollowRelation
 
 
 class TimelineView(ListView):
@@ -32,14 +34,30 @@ class TimelineView(ListView):
 
 
 class FollowingTweetListView(ListView):
-    """フォロー中ののツイート一覧ビュー"""
+    """フォロー中のツイート一覧ビュー"""
 
     model = Tweet
     template_name = "tweets/following.html"
     context_object_name = "tweet_list"
 
+    def get_queryset(self):
+        # ログインユーザ取得
+        user = self.request.user
+        # フォロー中のユーザIDを取得するクエリセット作成
+        inner_qs = FollowRelation.objects.filter(follower_id=user.id).values_list(
+            "followee_id", flat=True
+        )
+        # フォロー中のユーザのツイートを取得するクエリセットを返す
+        return Tweet.objects.filter(user_id__in=inner_qs).prefetch_related("user")
+
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
+        # 各ツイートに対してリサイズ済みの画像URLを設定
+        for tweet in context["tweet_list"]:
+            if tweet.image:
+                tweet.resized_image_url = get_resized_image_url(
+                    tweet.image.url, 150, 150
+                )
         return context
 
 
