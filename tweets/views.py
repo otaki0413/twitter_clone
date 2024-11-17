@@ -1,9 +1,7 @@
-from django.shortcuts import render, redirect
 from django.views.generic import ListView
-from django.contrib.auth import get_user_model
 
 from .models import Tweet
-from accounts.models import CustomUser, FollowRelation
+from accounts.models import FollowRelation
 
 
 class TimelineView(ListView):
@@ -14,7 +12,7 @@ class TimelineView(ListView):
     context_object_name = "tweet_list"
     queryset = Tweet.objects.prefetch_related("user")
     ordering = "-created_at"
-    # paginate_by = 2
+    paginate_by = 2
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)

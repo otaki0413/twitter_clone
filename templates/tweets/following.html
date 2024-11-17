@@ -14,4 +14,7 @@
     {% include "tweets/_tweet.html" with tweet=tweet %}
   {% endfor %}
 </div>
+<div class="mt-3">
+  {% include "tweets/_pagenation.html" %}
+</div>
 {% endblock content %}
