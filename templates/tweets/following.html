@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}フォロー中のツイート一覧{% endblock title %}
+
+{% block content %}
+<div class="p-1 border-bottom border-secondary">
+  {% include "tweets/_tabs.html" %}
+</div>
+<div class="p-2 border-bottom border-secondary">
+  {% include "tweets/_tweetform.html" %}
+</div>
+{% endblock content %}
