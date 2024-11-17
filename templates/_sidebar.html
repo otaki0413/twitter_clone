@@ -2,7 +2,7 @@
   class="d-flex flex-column pt-3 text-white"
   style="width: 240px"
 >
-  <ul class="nav flex-column gap-2 fs-5">
+  <ul class="nav flex-column gap-2 mb-4 fs-5">
     <li class="nav-item">
       <a href="{% url "tweets:timeline" %}" class="nav-link text-white">
         <i class="bi bi-house-door me-2"></i>
@@ -34,22 +34,23 @@
       </a>
     </li>
   </ul>
-  <hr>
-  <div class="px-3">
-    <a
-      href="#"
-      class="d-flex align-items-center text-white text-decoration-none"
-      data-bs-toggle="dropdown"
-      aria-expanded="false"
-    >
-      <img
-        src="https://github.com/mdo.png"
-        alt=""
-        width="32"
-        height="32"
-        class="rounded-circle me-2"
-      />
-      <strong>otaki</strong>
-    </a>
-  </div>
+  {% if user.is_authenticated %}
+    <div class="px-2">
+      <button type="submit" class="btn btn-primary rounded-pill px-5 py-2 fw-bold">ツイートする</button>
+      <div class="d-flex align-items-start mt-5">
+        <!-- TODO:ログインユーザーのプロフィール画像に変更する -->
+        <img
+          src="https://github.com/mdo.png"
+          alt="{{ request.user.username }}のプロフィール画像"
+          width="40"
+          height="40"
+          class="rounded-circle me-2"
+        />
+        <div>
+          <div class="fw-bold">{{ request.user.username }}</div>
+          <small class="text-secondary">@{{ request.user.username }}</small>
+        </div>
+      </div>
+    </div>
+  {% endif %}
 </nav>
