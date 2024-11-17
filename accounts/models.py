@@ -37,3 +37,33 @@ class CustomUser(AbstractUser, AbstractCommon):
         # ログイン回数を増やす
         self.login_count += 1
         self.save()
+
+
+class FollowRelation(AbstractCommon):
+    """フォロー関係の格納用モデル"""
+
+    class Meta:
+        db_table = "follow_relation"
+        verbose_name = verbose_name_plural = "フォロー関係"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["follower", "followee"],
+                name="unique_follower_followee_relation",
+            )
+        ]
+
+    follower = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name="following_relations",
+        verbose_name="フォローする人",
+    )
+    followee = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name="follower_relations",
+        verbose_name="フォローされる人",
+    )
+
+    def __str__(self):
+        return f"{self.follower.username} -> {self.followee.username}"
