@@ -10,6 +10,7 @@ class TimelineView(ListView):
     model = Tweet
     template_name = "tweets/index.html"
     context_object_name = "tweet_list"
+    queryset = Tweet.objects.prefetch_related("user")
     ordering = "-created_at"
     # paginate_by = 2
 
