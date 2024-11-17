@@ -3,52 +3,72 @@
 {% block title %}ホームページ{% endblock title %}
 
 {% block content %}
+<div class="p-1 border-bottom border-secondary">
+  {% include "tweets/_tabs.html" %}
+</div>
+<div class="p-2 border-bottom border-secondary">
+  {% include "tweets/_tweetform.html" %}
+</div>
 <div>
-  <div class="border-bottom p-1">
-    <ul class="nav text-center">
-      <li class="nav-item flex-fill">
-        <a class="nav-link text-white" href="#">おすすめ</a>
-      </li>
-      <li class="nav-item flex-fill">
-        <a class="nav-link text-white" href="#">フォロー中</a>
-      </li>
-    </ul>
-  </div>
-  <div class="px-2 border-bottom">
-    <div class="card border-0 bg-dark text-white">
-      <div class="card-body">
-        <div class="d-flex align-items-start">
-          <img
-            src="https://github.com/mdo.png"
-            alt="ユーザーイメージ"
-            width="48"
-            height="48"
-            class="rounded-circle me-3"
-          />
-          <div class="flex-grow-1">
-            <form>
-              <textarea
-                class="form-control"
-                placeholder="いまどうしてる？"
-                rows="3"
-              ></textarea>
-              <hr>
-              <div class="d-flex justify-content-between align-items-center">
-                <div>
-                  <!-- 画像アイコン(非表示のinputと紐づいている) -->
-                  <label for="fileInput" style="cursor: pointer">
-                    <i class="bi bi-image text-primary"></i>
-                  </label>
-                  <!-- 非表示のファイル入力エリア -->
-                  <input type="file" id="fileInput" class="form-control d-none">
-                </div>
-                <button type="submit" class="btn btn-primary rounded-pill">ツイートする</button>
-              </form>
-            </div>
+  {% for tweet in tweet_list  %}
+    <div class="p-2 border-bottom border-secondary">
+      <div class="d-flex align-items-start">
+        <img
+          src="https://github.com/mdo.png"
+          alt="ユーザーイメージ"
+          width="48"
+          height="48"
+          class="rounded-circle me-3"
+        />
+        <div class="flex-grow-1">
+          <div class="d-flex align-items-center gap-1">
+            <div class="fw-bold">{{ tweet.user.username }}</div>
+            <small class="text-secondary">
+              @{{ tweet.user.username }}・{{ tweet.created_at|date:"m月d日 H:i" }}
+            </small>
           </div>
+          <p>{{ tweet.content }}</p>
+          <!-- 投稿画像があれば表示 -->
+          {% if tweet.resized_image_url %}
+            <img src="{{ tweet.resized_image_url }}" alt="投稿画像}">
+          {% endif %}
         </div>
       </div>
     </div>
-  </div>
+  {% endfor %}
 </div>
+<div class="pagination">
+  <span class="step-links">
+      {% if page_obj.has_previous %}
+          <a href="?page=1">&laquo; first</a>
+          <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+      {% endif %}
+
+      <span class="current">
+          Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+      </span>
+
+      {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}">next</a>
+          <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+      {% endif %}
+  </span>
+</div>
+<nav aria-label="Page navigation example">
+  <ul class="pagination">
+    <li class="page-item">
+      <a class="page-link" href="#" aria-label="Previous">
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+    </li>
+    <li class="page-item"><a class="page-link" href="#">1</a></li>
+    <li class="page-item"><a class="page-link" href="#">2</a></li>
+    <li class="page-item"><a class="page-link" href="#">3</a></li>
+    <li class="page-item">
+      <a class="page-link" href="#" aria-label="Next">
+        <span aria-hidden="true">&raquo;</span>
+      </a>
+    </li>
+  </ul>
+</nav>
 {% endblock content %}
