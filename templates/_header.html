@@ -1,0 +1,21 @@
+<header class="p-3 border-bottom border-secondary">
+  <div class="d-flex align-items-center justify-content-between">
+    <div class="fs-4">
+      <a href="{% url "tweets:timeline" %}" class="text-white text-decoration-none">
+        <i class="bi bi-twitter-x"></i>
+        <span>Twitter Clone</span>
+      </a>
+    </div>
+    <div class="d-flex gap-2">
+      {% if user.is_authenticated %}
+        <form action="{% url "account_logout" %}" method="POST">
+        {% csrf_token %}
+          <button type="submit" class="btn btn-light rounded-pill">ログアウト</button>
+        </form>
+      {% else %}
+        <a href="{% url "accounts:login" %}" class="btn btn-light rounded-pill" role="button">ログイン</a>
+        <a href="{% url "accounts:signup" %}" class="btn btn-light rounded-pill" role="button">新規登録</a>
+      {% endif %}
+    </div>
+  </div>
+</header>

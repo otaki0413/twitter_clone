@@ -1,0 +1,30 @@
+<div class="d-flex align-items-start">
+  <img
+    src="https://github.com/mdo.png"
+    alt="ユーザーイメージ"
+    width="40"
+    height="40"
+    class="rounded-circle me-3"
+  />
+  <div class="flex-grow-1">
+    <form>
+      <textarea
+        class="form-control"
+        placeholder="いまどうしてる？"
+        rows="3"
+      ></textarea>
+      <hr class="my-2">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <!-- 画像アイコン(非表示のinputと紐づいている) -->
+          <label for="fileInput" style="cursor: pointer">
+            <i class="bi bi-image text-primary"></i>
+          </label>
+          <!-- 非表示のファイル入力エリア -->
+          <input type="file" id="fileInput" class="form-control d-none">
+        </div>
+        <button type="submit" class="btn btn-primary rounded-pill fw-bold px-3">ツイートする</button>
+      </form>
+    </div>
+  </div>
+  </div>

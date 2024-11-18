@@ -1,9 +1,14 @@
 from pathlib import Path
 
+import environ
+
 # --------------------
 # Build paths
 # --------------------
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+env = environ.Env()
+environ.Env.read_env(env_file=str(BASE_DIR) + "/.env")
 
 
 # --------------------
@@ -11,6 +16,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # --------------------
 INSTALLED_APPS = [
     "accounts.apps.AccountsConfig",
+    "tweets.apps.TweetsConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -22,6 +28,8 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.github",
+    "cloudinary",
+    "cloudinary_storage",
 ]
 
 MIDDLEWARE = [
@@ -79,7 +87,7 @@ ACCOUNT_FORMS = {
 # サインアップ時のアダプターの設定
 ACCOUNT_ADAPTER = "accounts.adapter.AccountAdapter"
 # サインアップ・ログイン後のリダイレクト先URL
-LOGIN_REDIRECT_URL = "accounts:home"
+LOGIN_REDIRECT_URL = "/"
 # ログアウト時のリダイレクト先URL
 ACCOUNT_LOGOUT_REDIRECT_URL = "accounts:login"
 # ユーザー認証にメールアドレスを使用
@@ -90,8 +98,8 @@ ACCOUNT_USERNAME_REQUIRED = True
 ACCOUNT_EMAIL_REQUIRED = True
 # パスワードの入力を1回にする
 ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = False
-# 認証済みユーザーのリダイレクトを防止させる
-ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = False
+# 認証済みユーザがログイン/サインアップページにアクセスすると、LOGIN_REDIRECT_URLにリダイレクトさせる
+ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = True
 # ユーザー登録時に確認メールを送信するが、確認を必要としない
 ACCOUNT_EMAIL_VERIFICATION = "optional"
 # 認証情報をセッションに保存しない
@@ -119,11 +127,22 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
+# --------------------
+# Media files
+# --------------------
 MEDIA_URL = "/media/"
+CLOUDINARY_STORAGE = {
+    "CLOUD_NAME": env("CLOUDINARY_NAME"),
+    "API_KEY": env("CLOUDINARY_API_KEY"),
+    "API_SECRET": env("CLOUDINARY_API_SECRET"),
+}
 
 STORAGES = {
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
 }
 
