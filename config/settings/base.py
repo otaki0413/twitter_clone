@@ -17,6 +17,7 @@ environ.Env.read_env(env_file=str(BASE_DIR) + "/.env")
 INSTALLED_APPS = [
     "accounts.apps.AccountsConfig",
     "tweets.apps.TweetsConfig",
+    "profiles.apps.ProfilesConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
