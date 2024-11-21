@@ -2,6 +2,16 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
+def icon_image_path(instance, filename):
+    """アイコン画像のアップロード先を生成"""
+    return f"profiles/{instance.id}/icon/{filename}"
+
+
+def header_image_path(instance, filename):
+    """ヘッダー画像のアップロード先を生成"""
+    return f"profiles/{instance.id}/header/{filename}"
+
+
 class AbstractCommon(models.Model):
     """共通フィールド用の抽象基底クラス"""
 
@@ -19,12 +29,17 @@ class CustomUser(AbstractUser, AbstractCommon):
         db_table = "custom_user"
         verbose_name = verbose_name_plural = "カスタムユーザー"
 
+    name = models.CharField("名前", max_length=50, blank=True)
     email = models.EmailField("メールアドレス", unique=True, null=False, blank=False)
     description = models.TextField("自己紹介", blank=True)
     tel_number = models.CharField("電話番号", max_length=15, null=True, blank=True)
     birth_date = models.DateField("生年月日", null=True, blank=True)
-    icon_image = models.ImageField("アイコン画像", upload_to="", blank=True)
-    header_image = models.ImageField("ヘッダー画像", upload_to="", blank=True)
+    icon_image = models.ImageField(
+        "アイコン画像", upload_to=icon_image_path, blank=True
+    )
+    header_image = models.ImageField(
+        "ヘッダー画像", upload_to=header_image_path, blank=True
+    )
     location = models.CharField("場所", max_length=100, blank=True)
     website = models.CharField("ウェブサイト", max_length=255, blank=True)
     login_count = models.IntegerField("ログイン回数", default=0)
