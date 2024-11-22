@@ -26,3 +26,43 @@ class Tweet(AbstractCommon):
 
     def __str__(self):
         return f"{self.user.username}のツイート"
+
+
+class Like(AbstractCommon):
+    """いいね情報の格納用モデル"""
+
+    class Meta:
+        db_table = "like"
+
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    tweet = models.ForeignKey(Tweet, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.user.username} like {self.tweet.content[:20]}..."
+
+
+class Retweet(AbstractCommon):
+    """リツイート情報の格納用モデル"""
+
+    class Meta:
+        db_table = "retweet"
+
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    tweet = models.ForeignKey(Tweet, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.user.username} retweet {self.tweet.content[:20]}..."
+
+
+class Comment(AbstractCommon):
+    """コメント情報の格納用モデル"""
+
+    class Meta:
+        db_table = "comment"
+
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    tweet = models.ForeignKey(Tweet, on_delete=models.CASCADE)
+    content = models.TextField("コメント内容", null=False, blank=False)
+
+    def __str__(self):
+        return f"{self.user.username} comment: {self.content[:20]}... on tweet: {self.tweet.content[:20]}..."
