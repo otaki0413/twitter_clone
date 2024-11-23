@@ -38,7 +38,7 @@ class Like(AbstractCommon):
     tweet = models.ForeignKey(Tweet, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.user.username} like {self.tweet.content[:20]}..."
+        return f"[{self.id}] {self.user.username} like: {self.tweet.content}"
 
 
 class Retweet(AbstractCommon):
@@ -51,7 +51,7 @@ class Retweet(AbstractCommon):
     tweet = models.ForeignKey(Tweet, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.user.username} retweet {self.tweet.content[:20]}..."
+        return f"[{self.id}] {self.user.username} retweet: {self.tweet.content}"
 
 
 class Comment(AbstractCommon):
@@ -65,4 +65,4 @@ class Comment(AbstractCommon):
     content = models.TextField("コメント内容", null=False, blank=False)
 
     def __str__(self):
-        return f"{self.user.username} comment: {self.content[:20]}... on tweet: {self.tweet.content[:20]}..."
+        return f"[{self.id}] {self.user.username} commented: {self.content} on {self.tweet.content}"
