@@ -1,9 +1,8 @@
 <div class="p-2 border-bottom border-secondary">
   <div class="d-flex align-items-start">
-    <!-- TODO:ユーザーのプロフィール画像に変更する -->
      <a href="{% url "profiles:my_tweet_list" tweet.user.username %}">
         <img
-          src="https://github.com/mdo.png"
+          src="{{ tweet.user.icon_image_url }}"
           alt="ユーザーイメージ"
           width="40"
           height="40"

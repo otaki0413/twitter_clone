@@ -1,14 +1,14 @@
 <ul class="nav text-center">
   <li class="nav-item flex-fill">
-    <a class="nav-link text-white" href="{% url "profiles:my_tweet_list" user.username %}">ツイート</a>
+    <a class="nav-link text-white" href="{% url "profiles:my_tweet_list" user_profile.username %}">ツイート</a>
   </li>
   <li class="nav-item flex-fill">
-    <a class="nav-link text-white" href="{% url "profiles:liked_tweet_list" user.username %}">いいね</a>
+    <a class="nav-link text-white" href="{% url "profiles:liked_tweet_list" user_profile.username %}">いいね</a>
   </li>
   <li class="nav-item flex-fill">
-    <a class="nav-link text-white" href="{% url "profiles:retweeted_tweet_list" user.username %}">リツイート</a>
+    <a class="nav-link text-white" href="{% url "profiles:retweeted_tweet_list" user_profile.username %}">リツイート</a>
   </li>
   <li class="nav-item flex-fill">
-    <a class="nav-link text-white" href="{% url "profiles:commented_tweet_list" user.username %}">コメント</a>
+    <a class="nav-link text-white" href="{% url "profiles:commented_tweet_list" user_profile.username %}">コメント</a>
   </li>
 </ul>
