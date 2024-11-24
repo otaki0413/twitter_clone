@@ -19,8 +19,9 @@
     </div>
   </div>
 </div>
-<!-- ヘッダー画像 -->
-<div class="border-top border-bottom border-secondary" style="height: 200px;">
+
+<div class="border-top border-bottom border-secondary position-relative" style="height: 200px;">
+  <!-- ヘッダー画像 -->
   {% if user_profile.header_image %}
     <img
       src="{{ user_profile.header_image.url }}"
@@ -32,6 +33,16 @@
       <p class="m-0 text-white">ヘッダー画像が設定されていません</p>
     </div>
   {% endif %}
+  <!-- アイコン画像 -->
+  <div class="position-absolute" style="bottom: -60px; left: 16px;">
+    <img
+      src="{{ user_profile.icon_image_url }}"
+      alt="アイコン画像"
+      width="120"
+      height="120"
+      class="rounded-circle border border-secondary"
+    />
+  </div>
 </div>
 
 <!-- プロフィール内容 -->
@@ -46,7 +57,7 @@
   </div>
   <div>
     <!-- プロフィール名とユーザー名 -->
-    <div class="mb-3">
+    <div class="mt-4 mb-3">
       <div class="fs-4 fw-bold">
         <div class="fs-4 fw-bold">
           {% if user_profile.name %}
