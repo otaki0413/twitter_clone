@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}いいねしたツイート{% endblock title %}
+
+{% block content %}
+<div>
+  <!-- プロフィールエリア -->
+  <div>
+    {% include "profiles/_user_profile.html" %}
+  </div>
+  <!-- タブエリア -->
+  <div class="p-1 border-bottom border-secondary">
+    {% include "profiles/_tabs.html" %}
+  </div>
+  <!-- ツイート一覧エリア -->
+  <div>
+    {% for tweet in tweet_list %}
+      {% include "profiles/_tweet.html" with tweet=tweet %}
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
