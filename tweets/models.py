@@ -33,6 +33,12 @@ class Like(AbstractCommon):
 
     class Meta:
         db_table = "like"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "tweet"],
+                name="unique_like_relation",
+            )
+        ]
 
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     tweet = models.ForeignKey(Tweet, on_delete=models.CASCADE)
@@ -46,6 +52,12 @@ class Retweet(AbstractCommon):
 
     class Meta:
         db_table = "retweet"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "tweet"],
+                name="unique_retweet_relation",
+            )
+        ]
 
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     tweet = models.ForeignKey(Tweet, on_delete=models.CASCADE)
