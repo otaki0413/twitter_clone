@@ -37,7 +37,12 @@
 <!-- プロフィール内容 -->
 <div class="px-3 pt-2 mb-4">
   <div class="d-flex">
-    <a href="#" class="btn btn-dark border border-secondary rounded-pill fw-bold px-3 ms-auto" role="button">プロフィールを編集</a>
+    {% if user == user_profile %}
+      <a href="#" class="btn btn-dark border border-secondary rounded-pill fw-bold px-3 ms-auto" role="button">プロフィールを編集</a>
+    {% else %}
+      <!-- TODO:フォロー・未フォローに応じて表示を変える -->
+      <button class="btn btn-dark border border-secondary rounded-pill fw-bold px-3 ms-auto">フォロー中 OR 未フォロー</button>
+    {% endif %}
   </div>
   <div>
     <!-- プロフィール名とユーザー名 -->
