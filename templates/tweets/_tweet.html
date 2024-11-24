@@ -11,7 +11,13 @@
      </a>
     <div class="flex-grow-1">
       <div class="d-flex align-items-center gap-1">
-        <div class="fw-bold">{{ tweet.user.username }}</div>
+        <div class="fw-bold">
+          {% if tweet.user.name %}
+            {{ tweet.user.name }}
+          {% else %}
+            {{ tweet.user.username }}
+          {% endif %}
+        </div>
         <small class="text-secondary">
           @{{ tweet.user.username }}・{{ tweet.created_at|date:"m月d日 H:i" }}
         </small>
