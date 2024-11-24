@@ -14,9 +14,15 @@
   </div>
   <!-- ツイート一覧エリア -->
   <div>
-    {% for tweet in tweet_list %}
-      {% include "profiles/_tweet.html" %}
-    {% endfor %}
+    {% if tweet_list %}
+      {% for tweet in tweet_list %}
+        {% include "profiles/_tweet.html" %}
+      {% endfor %}
+    {% else %}
+      <div class="mt-5">
+        <p class="text-center">対象のツイートは存在しません</p>
+      </div>
+    {% endif %}
   </div>
 </div>
 {% endblock %}
