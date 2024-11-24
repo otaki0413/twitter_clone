@@ -147,6 +147,8 @@ STORAGES = {
     },
 }
 
+DEFAULT_ICON_IMAGE_URL = env("DEFAULT_ICON_IMAGE_URL")
+
 # --------------------
 # Password validation
 # --------------------
