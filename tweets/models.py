@@ -40,7 +40,7 @@ class Like(AbstractCommon):
             )
         ]
 
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="likes")
     tweet = models.ForeignKey(Tweet, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -59,7 +59,9 @@ class Retweet(AbstractCommon):
             )
         ]
 
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="retweets"
+    )
     tweet = models.ForeignKey(Tweet, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -72,7 +74,9 @@ class Comment(AbstractCommon):
     class Meta:
         db_table = "comment"
 
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="comments"
+    )
     tweet = models.ForeignKey(Tweet, on_delete=models.CASCADE)
     content = models.TextField("コメント内容", null=False, blank=False)
 

@@ -3,7 +3,7 @@ from django.db.models import QuerySet
 
 from config.utils import get_resized_image_url
 from accounts.models import CustomUser
-from tweets.models import Tweet, Like, Retweet, Comment
+from tweets.models import Tweet
 
 
 class TweetListMixin:
@@ -36,9 +36,7 @@ class MyTweetListView(DetailView, TweetListMixin):
         # 現在のユーザー取得
         current_user = self.get_object()
         # 投稿したツイートを取得
-        context["tweet_list"] = self.get_tweet_list(
-            Tweet.objects.filter(user=current_user).select_related("user")
-        )
+        context["tweet_list"] = self.get_tweet_list(current_user.tweets)
         return context
 
 
@@ -56,9 +54,7 @@ class LikedTweetListView(DetailView, TweetListMixin):
         # 現在のユーザー取得
         current_user = self.get_object()
         # いいねしたツイートIDを取得するクエリセット作成
-        liked_tweet_ids = Like.objects.filter(user=current_user).values_list(
-            "tweet_id", flat=True
-        )
+        liked_tweet_ids = current_user.likes.values_list("tweet_id", flat=True)
         # いいねしたツイートを取得
         context["tweet_list"] = self.get_tweet_list(
             Tweet.objects.filter(id__in=liked_tweet_ids).select_related("user")
@@ -80,9 +76,7 @@ class RetweetedTweetListView(DetailView, TweetListMixin):
         # 現在のユーザー取得
         current_user = self.get_object()
         # リツイートしたツイートIDを取得するクエリセット作成
-        retweeted_tweet_ids = Retweet.objects.filter(user=current_user).values_list(
-            "tweet_id", flat=True
-        )
+        retweeted_tweet_ids = current_user.retweets.values_list("tweet_id", flat=True)
         # リツイートしたツイートを取得
         context["tweet_list"] = self.get_tweet_list(
             Tweet.objects.filter(id__in=retweeted_tweet_ids).select_related("user")
@@ -104,9 +98,7 @@ class CommentedTweetListView(DetailView, TweetListMixin):
         # 現在のユーザー取得
         current_user = self.get_object()
         # コメントしたツイートIDを取得するクエリセット作成
-        commented_tweet_ids = Comment.objects.filter(user=current_user).values_list(
-            "tweet_id", flat=True
-        )
+        commented_tweet_ids = current_user.comments.values_list("tweet_id", flat=True)
         # コメントしたツイートを取得
         context["tweet_list"] = self.get_tweet_list(
             Tweet.objects.filter(id__in=commented_tweet_ids).select_related("user")
