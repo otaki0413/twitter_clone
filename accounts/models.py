@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.conf import settings
+from django.templatetags.static import static
 
 
 def icon_image_path(instance, filename):
@@ -53,7 +53,7 @@ class CustomUser(AbstractUser, AbstractCommon):
         """アイコン画像のURLを取得して、存在しない場合はデフォルト画像を返す"""
         if self.icon_image and self.icon_image != "":
             return self.icon_image.url
-        return settings.DEFAULT_ICON_IMAGE_URL
+        return static("default_icon.png")
 
     def post_login(self):
         """ログイン後処理"""
