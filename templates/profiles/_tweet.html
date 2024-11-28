@@ -1,7 +1,7 @@
 <div class="p-2 border-bottom border-secondary">
   <div class="d-flex align-items-start">
      <a href="{% url "profiles:my_tweet_list" tweet.user.username %}">
-        <img
+      <img
           src="{{ tweet.user.icon_image_url }}"
           alt="ユーザーイメージ"
           width="40"
@@ -19,7 +19,7 @@
           {% endif %}
         </div>
         <small class="text-secondary">
-          @{{ tweet.user.username }}・{{ tweet.created_at|date:"m月d日 H:i" }}
+          @{{ tweet.user.username }}・{{ tweet.created_at|date:"n月d日 H:i" }}
         </small>
       </div>
       <div>{{ tweet.content }}</div>

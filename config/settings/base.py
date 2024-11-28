@@ -17,6 +17,7 @@ environ.Env.read_env(env_file=str(BASE_DIR) + "/.env")
 INSTALLED_APPS = [
     "accounts.apps.AccountsConfig",
     "tweets.apps.TweetsConfig",
+    "profiles.apps.ProfilesConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -24,6 +25,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.sites",
+    "django.contrib.humanize",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
@@ -145,6 +147,8 @@ STORAGES = {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
 }
+
+DEFAULT_ICON_IMAGE_URL = env("DEFAULT_ICON_IMAGE_URL")
 
 # --------------------
 # Password validation

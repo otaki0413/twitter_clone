@@ -28,27 +28,39 @@
       </a>
     </li>
     <li class="nav-item">
-      <a href="#" class="nav-link text-white">
-        <i class="bi bi-person me-2"></i>
-        <span>プロフィール</span>
-      </a>
+      {% if user.is_authenticated %}
+        <a href="{% url "profiles:my_tweet_list" user.username %}" class="nav-link text-white">
+          <i class="bi bi-person me-2"></i>
+          <span>プロフィール</span>
+        </a>
+      {% else %}
+        <a href="{% url "accounts:login" %}" class="nav-link text-white">
+          <i class="bi bi-person me-2"></i>
+          <span>プロフィール</span>
+        </a>
+      {% endif %}
     </li>
   </ul>
   {% if user.is_authenticated %}
     <div class="px-2">
       <button type="submit" class="btn btn-primary rounded-pill px-5 py-2 fw-bold">ツイートする</button>
       <div class="d-flex align-items-start mt-5">
-        <!-- TODO:ログインユーザーのプロフィール画像に変更する -->
         <img
-          src="https://github.com/mdo.png"
-          alt="{{ request.user.username }}のプロフィール画像"
+          src="{{ user.icon_image_url }}"
+          alt="プロフィール画像"
           width="40"
           height="40"
           class="rounded-circle me-2"
         />
         <div>
-          <div class="fw-bold">{{ request.user.username }}</div>
-          <small class="text-secondary">@{{ request.user.username }}</small>
+          <div class="fw-bold">
+            {% if user.name %}
+              {{ user.name }}
+            {% else %}
+              {{ user.username }}
+            {% endif %}
+          </div>
+          <small class="text-secondary">@{{ user.username }}</small>
         </div>
       </div>
     </div>

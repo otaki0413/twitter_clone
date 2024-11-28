@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}プロフィールページ{% endblock title %}
+
+{% block content %}
+<div>
+  <!-- プロフィールエリア -->
+  <div>
+    {% include "profiles/_user_profile.html" %}
+  </div>
+  <!-- タブエリア -->
+  <div class="p-1 border-bottom border-secondary">
+    {% include "profiles/_tabs.html" %}
+  </div>
+  <!-- ツイート一覧エリア -->
+  <div>
+    {% if tweet_list %}
+      {% for tweet in tweet_list %}
+        {% include "profiles/_tweet.html" %}
+      {% endfor %}
+    {% else %}
+      <div class="mt-5">
+        <p class="text-center">対象のツイートは存在しません</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
