@@ -5,6 +5,7 @@ from .views import (
     LikedTweetListView,
     RetweetedTweetListView,
     CommentedTweetListView,
+    ProfileEditView,
 )
 
 app_name = "profiles"
@@ -23,4 +24,5 @@ urlpatterns = [
         CommentedTweetListView.as_view(),
         name="commented_tweet_list",
     ),
+    path("<str:username>/edit/", ProfileEditView.as_view(), name="profile_edit"),
 ]
