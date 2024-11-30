@@ -1,9 +1,11 @@
-from django.views.generic import DetailView
+from django.views.generic import DetailView, UpdateView
 from django.db.models import QuerySet
+from django.urls import reverse_lazy
 
 from config.utils import get_resized_image_url
 from accounts.models import CustomUser
 from tweets.models import Tweet
+from .forms import ProfileEditForm
 
 
 class TweetListMixin:
@@ -104,3 +106,20 @@ class CommentedTweetListView(DetailView, TweetListMixin):
             Tweet.objects.filter(id__in=commented_tweet_ids).select_related("user")
         )
         return context
+
+
+class ProfileEditView(UpdateView):
+    """プロフィール編集用のビュー"""
+
+    model = CustomUser
+    form_class = ProfileEditForm
+    template_name = "profiles/profile_edit.html"
+    context_object_name = "user_profile"
+    slug_field = "username"
+    slug_url_kwarg = "username"
+
+    def get_success_url(self):
+        # get_success_urlをオーバーライドして動的なパスに遷移させる
+        return reverse_lazy(
+            "profiles:my_tweet_list", kwargs={"username": self.kwargs["username"]}
+        )
