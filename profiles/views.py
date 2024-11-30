@@ -1,4 +1,5 @@
 from django.views.generic import DetailView, UpdateView
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import QuerySet
 from django.urls import reverse_lazy
 
@@ -24,7 +25,7 @@ class TweetListMixin:
         return tweet_queryset
 
 
-class MyTweetListView(DetailView, TweetListMixin):
+class MyTweetListView(LoginRequiredMixin, DetailView, TweetListMixin):
     """自身のツイート一覧ビュー（プロフィール詳細ページのデフォルトビュー）"""
 
     model = CustomUser
@@ -32,6 +33,7 @@ class MyTweetListView(DetailView, TweetListMixin):
     context_object_name = "user_profile"
     slug_field = "username"  # モデルのフィールド名
     slug_url_kwarg = "username"  # urls.pyでのキーワード名
+    login_url = reverse_lazy("accounts:login")
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -42,7 +44,7 @@ class MyTweetListView(DetailView, TweetListMixin):
         return context
 
 
-class LikedTweetListView(DetailView, TweetListMixin):
+class LikedTweetListView(LoginRequiredMixin, DetailView, TweetListMixin):
     """いいねしたツイート一覧ビュー"""
 
     model = CustomUser
@@ -50,6 +52,7 @@ class LikedTweetListView(DetailView, TweetListMixin):
     context_object_name = "user_profile"
     slug_field = "username"
     slug_url_kwarg = "username"
+    login_url = reverse_lazy("accounts:login")
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -64,7 +67,7 @@ class LikedTweetListView(DetailView, TweetListMixin):
         return context
 
 
-class RetweetedTweetListView(DetailView, TweetListMixin):
+class RetweetedTweetListView(LoginRequiredMixin, DetailView, TweetListMixin):
     """リツイートしたツイート一覧ビュー"""
 
     model = CustomUser
@@ -72,6 +75,7 @@ class RetweetedTweetListView(DetailView, TweetListMixin):
     context_object_name = "user_profile"
     slug_field = "username"
     slug_url_kwarg = "username"
+    login_url = reverse_lazy("accounts:login")
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -86,7 +90,7 @@ class RetweetedTweetListView(DetailView, TweetListMixin):
         return context
 
 
-class CommentedTweetListView(DetailView, TweetListMixin):
+class CommentedTweetListView(LoginRequiredMixin, DetailView, TweetListMixin):
     """コメントしたツイート一覧ビュー"""
 
     model = CustomUser
@@ -94,6 +98,7 @@ class CommentedTweetListView(DetailView, TweetListMixin):
     context_object_name = "user_profile"
     slug_field = "username"
     slug_url_kwarg = "username"
+    login_url = reverse_lazy("accounts:login")
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -108,7 +113,10 @@ class CommentedTweetListView(DetailView, TweetListMixin):
         return context
 
 
-class ProfileEditView(UpdateView):
+class ProfileEditView(
+    LoginRequiredMixin,
+    UpdateView,
+):
     """プロフィール編集用のビュー"""
 
     model = CustomUser
@@ -117,6 +125,7 @@ class ProfileEditView(UpdateView):
     context_object_name = "user_profile"
     slug_field = "username"
     slug_url_kwarg = "username"
+    login_url = reverse_lazy("accounts:login")
 
     def get_success_url(self):
         # get_success_urlをオーバーライドして動的なパスに遷移させる
