@@ -4,7 +4,7 @@
 
 {% block content %}
 <div>
-  <form method="POST" action="{% url "profiles:profile_edit" user.username %}" novalidate>
+  <form method="POST" enctype="multipart/form-data" novalidate>
     {% csrf_token %}
     <div class="d-flex align-items-center justify-content-between px-3 py-2 mb-4 border-bottom border-secondary">
       <div class="d-flex align-items-center">
