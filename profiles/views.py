@@ -133,7 +133,7 @@ class ProfileEditView(
         icon_image = self.request.FILES.get("icon_image")
         if icon_image is not None:
             # 既存のアイコン画像があればCloudinaryから削除
-            if user.icon_image is not None:
+            if user.icon_image:
                 cloudinary.uploader.destroy(user.icon_image.name, invalidate=True)
             # 新しいアイコン画像を設定
             profile.icon_image = icon_image
@@ -142,7 +142,7 @@ class ProfileEditView(
         header_image = self.request.FILES.get("header_image")
         if header_image is not None:
             # 既存のヘッダー画像があればCloudinaryから削除
-            if user.header_image is not None:
+            if user.header_image:
                 cloudinary.uploader.destroy(user.header_image.name, invalidate=True)
             # 新しいヘッダー画像を設定
             profile.header_image = header_image
