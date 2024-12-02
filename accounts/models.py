@@ -32,7 +32,7 @@ class CustomUser(AbstractUser, AbstractCommon):
 
     name = models.CharField("名前", max_length=50, blank=True)
     email = models.EmailField("メールアドレス", unique=True, null=False, blank=False)
-    description = models.TextField("自己紹介", blank=True)
+    description = models.TextField("自己紹介", max_length=160, blank=True)
     tel_number = models.CharField("電話番号", max_length=15, null=True, blank=True)
     birth_date = models.DateField("生年月日", null=True, blank=True)
     icon_image = models.ImageField(
@@ -41,8 +41,8 @@ class CustomUser(AbstractUser, AbstractCommon):
     header_image = models.ImageField(
         "ヘッダー画像", upload_to=header_image_path, blank=True
     )
-    location = models.CharField("場所", max_length=100, blank=True)
-    website = models.CharField("ウェブサイト", max_length=255, blank=True)
+    location = models.CharField("場所", max_length=30, blank=True)
+    website = models.CharField("ウェブサイト", max_length=100, blank=True)
     login_count = models.IntegerField("ログイン回数", default=0)
 
     def __str__(self):

@@ -1,28 +1,18 @@
-from django.views.generic import DetailView
-from django.db.models import QuerySet
+from django.views.generic import DetailView, UpdateView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import resolve_url
+from django.urls import reverse_lazy
+from django.contrib import messages
 
-from config.utils import get_resized_image_url
+import cloudinary.uploader
+
 from accounts.models import CustomUser
 from tweets.models import Tweet
+from .forms import ProfileEditForm
+from .mixins import TweetListMixin, LoginUserIsUserMixin
 
 
-class TweetListMixin:
-    """ツイート一覧を取得し、画像のリサイズを設定する共通処理"""
-
-    def get_tweet_list(
-        self, tweet_queryset: QuerySet, order_by: str = "-created_at"
-    ) -> QuerySet:
-        """対象のクエリセットに並び替えオプション追加、リサイズ済みの画像URLを付与する"""
-        tweet_queryset = tweet_queryset.order_by(order_by)
-        for tweet in tweet_queryset:
-            if tweet.image:
-                tweet.resized_image_url = get_resized_image_url(
-                    tweet.image.url, 150, 150
-                )
-        return tweet_queryset
-
-
-class MyTweetListView(DetailView, TweetListMixin):
+class MyTweetListView(LoginRequiredMixin, DetailView, TweetListMixin):
     """自身のツイート一覧ビュー（プロフィール詳細ページのデフォルトビュー）"""
 
     model = CustomUser
@@ -30,6 +20,7 @@ class MyTweetListView(DetailView, TweetListMixin):
     context_object_name = "user_profile"
     slug_field = "username"  # モデルのフィールド名
     slug_url_kwarg = "username"  # urls.pyでのキーワード名
+    login_url = reverse_lazy("accounts:login")
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -40,7 +31,7 @@ class MyTweetListView(DetailView, TweetListMixin):
         return context
 
 
-class LikedTweetListView(DetailView, TweetListMixin):
+class LikedTweetListView(LoginRequiredMixin, DetailView, TweetListMixin):
     """いいねしたツイート一覧ビュー"""
 
     model = CustomUser
@@ -48,6 +39,7 @@ class LikedTweetListView(DetailView, TweetListMixin):
     context_object_name = "user_profile"
     slug_field = "username"
     slug_url_kwarg = "username"
+    login_url = reverse_lazy("accounts:login")
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -62,7 +54,7 @@ class LikedTweetListView(DetailView, TweetListMixin):
         return context
 
 
-class RetweetedTweetListView(DetailView, TweetListMixin):
+class RetweetedTweetListView(LoginRequiredMixin, DetailView, TweetListMixin):
     """リツイートしたツイート一覧ビュー"""
 
     model = CustomUser
@@ -70,6 +62,7 @@ class RetweetedTweetListView(DetailView, TweetListMixin):
     context_object_name = "user_profile"
     slug_field = "username"
     slug_url_kwarg = "username"
+    login_url = reverse_lazy("accounts:login")
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -84,7 +77,7 @@ class RetweetedTweetListView(DetailView, TweetListMixin):
         return context
 
 
-class CommentedTweetListView(DetailView, TweetListMixin):
+class CommentedTweetListView(LoginRequiredMixin, DetailView, TweetListMixin):
     """コメントしたツイート一覧ビュー"""
 
     model = CustomUser
@@ -92,6 +85,7 @@ class CommentedTweetListView(DetailView, TweetListMixin):
     context_object_name = "user_profile"
     slug_field = "username"
     slug_url_kwarg = "username"
+    login_url = reverse_lazy("accounts:login")
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -104,3 +98,57 @@ class CommentedTweetListView(DetailView, TweetListMixin):
             Tweet.objects.filter(id__in=commented_tweet_ids).select_related("user")
         )
         return context
+
+
+class ProfileEditView(
+    LoginUserIsUserMixin,
+    LoginRequiredMixin,
+    UpdateView,
+):
+    """プロフィール編集用のビュー"""
+
+    model = CustomUser
+    form_class = ProfileEditForm
+    template_name = "profiles/profile_edit.html"
+    context_object_name = "user_profile"
+    slug_field = "username"
+    slug_url_kwarg = "username"
+    login_url = reverse_lazy("accounts:login")
+
+    def get_success_url(self):
+        # get_success_urlをオーバーライドして動的なパスに遷移させる
+        return resolve_url("profiles:my_tweet_list", username=self.kwargs["username"])
+        # MEMO:下記でもいける
+        # return reverse_lazy(
+        #     "profiles:my_tweet_list", kwargs={"username": self.kwargs["username"]}
+        # )
+
+    def form_valid(self, form):
+        # 現在のユーザー取得
+        user = self.request.user
+        # フォームからインスタンス取得（※まだ保存しない）
+        profile = form.save(commit=False)
+
+        # アップロードされたアイコン画像を取得
+        icon_image = self.request.FILES.get("icon_image")
+        if icon_image is not None:
+            # 既存のアイコン画像があればCloudinaryから削除
+            if user.icon_image is not None:
+                cloudinary.uploader.destroy(user.icon_image.name, invalidate=True)
+            # 新しいアイコン画像を設定
+            profile.icon_image = icon_image
+
+        # アップロードされたヘッダー画像を取得
+        header_image = self.request.FILES.get("header_image")
+        if header_image is not None:
+            # 既存のヘッダー画像があればCloudinaryから削除
+            if user.header_image is not None:
+                cloudinary.uploader.destroy(user.header_image.name, invalidate=True)
+            # 新しいヘッダー画像を設定
+            profile.header_image = header_image
+
+        messages.success(
+            self.request, "プロフィールを更新しました", extra_tags="success"
+        )
+        # 親クラス側で保存処理を実行
+        return super().form_valid(form)
