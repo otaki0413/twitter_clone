@@ -1,12 +1,12 @@
-from django.views.generic import ListView
+from django.views.generic import ListView, CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 
 from config.utils import get_resized_image_url
 
-
 from .models import Tweet
 from accounts.models import FollowRelation
+from .forms import TweetCreateForm
 
 
 class TimelineView(LoginRequiredMixin, ListView):
@@ -17,11 +17,13 @@ class TimelineView(LoginRequiredMixin, ListView):
     context_object_name = "tweet_list"
     queryset = Tweet.objects.prefetch_related("user")
     ordering = "-created_at"
-    paginate_by = 2
+    paginate_by = 8
     login_url = reverse_lazy("accounts:login")
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
+        # ツイート投稿フォームを設定
+        context["form"] = TweetCreateForm()
         # 各ツイートに対してリサイズ済みの画像URLを設定
         for tweet in context["tweet_list"]:
             if tweet.image:
@@ -57,6 +59,8 @@ class FollowingTweetListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
+        # ツイート投稿フォームを設定
+        context["form"] = TweetCreateForm()
         # 各ツイートに対してリサイズ済みの画像URLを設定
         for tweet in context["tweet_list"]:
             if tweet.image:
@@ -64,3 +68,23 @@ class FollowingTweetListView(LoginRequiredMixin, ListView):
                     tweet.image.url, 150, 150
                 )
         return context
+
+
+class TweetCreateView(CreateView):
+    """ツイート投稿用のビュー"""
+
+    model = Tweet
+    form_class = TweetCreateForm
+    # template_name = "tweets/_tweetform.html"
+    success_url = reverse_lazy("tweets:timeline")
+
+    def form_valid(self, form):
+        # 現在のユーザー取得
+        user = self.request.user
+        # フォームからインスタンス取得（※まだ保存しない）
+        tweet = form.save(commit=False)
+        # ユーザーの設定
+        tweet.user = user
+        tweet.save()
+        # 親クラスの保存処理を実行
+        return super().form_valid(form)
