@@ -1,4 +1,4 @@
-from django.views.generic import ListView, CreateView
+from django.views.generic import ListView, DetailView, CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.shortcuts import render, redirect
@@ -129,3 +129,10 @@ def create_tweet_context_with_form(request, tweet_queryset: QuerySet = None):
         context["tweet_list"] = page_obj.object_list
 
     return context
+
+
+class TweetDetailView(DetailView):
+    """ツイート詳細ビュー"""
+
+    model = Tweet
+    template_name = "tweets/detail.html"
