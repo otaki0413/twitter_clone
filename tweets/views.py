@@ -18,17 +18,14 @@ class TimelineView(LoginRequiredMixin, ListView):
 
     model = Tweet
     template_name = "tweets/index.html"
-    context_object_name = "tweet_list"
     queryset = Tweet.objects.prefetch_related("user").order_by("-created_at")
     ordering = "-created_at"
     login_url = reverse_lazy("accounts:login")
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        # ページネーション設定が適用されたクエリセットを取得する（※self.querysetだと全件取得になるため）
-        tweet_queryset = context.get("tweet_list")
         # ページネーション、画像リサイズを適用したツイートリストやツイート投稿フォームを含むコンテキストに更新
-        context.update(create_tweet_context_with_form(self.request, tweet_queryset))
+        context.update(create_tweet_context_with_form(self.request, self.queryset))
         return context
 
     # def get(self, *args, **kwargs):
@@ -43,7 +40,6 @@ class FollowingTweetListView(LoginRequiredMixin, ListView):
 
     model = Tweet
     template_name = "tweets/following.html"
-    context_object_name = "tweet_list"
     login_url = reverse_lazy("accounts:login")
 
     def get_queryset(self):
@@ -62,8 +58,8 @@ class FollowingTweetListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        tweet_queryset = context.get("tweet_list")
-        context.update(create_tweet_context_with_form(self.request, tweet_queryset))
+        queryset = self.get_queryset()
+        context.update(create_tweet_context_with_form(self.request, queryset))
         return context
 
 
