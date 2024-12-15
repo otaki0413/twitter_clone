@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}ツイート詳細ページ{% endblock title %}
+
+{% block content %}
+<div>
+  <div class="d-flex align-items-center px-3" style="height: 54px">
+    <div style="min-width: 56px">
+      <a href="{{ request.META.HTTP_REFERER }}" class="text-white">
+        <i class="bi bi-arrow-left"></i>
+      </a>
+    </div>
+    <div>
+      <div class="fs-5 fw-bold">ツイート</div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
