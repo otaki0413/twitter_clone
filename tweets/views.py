@@ -18,14 +18,16 @@ class TimelineView(LoginRequiredMixin, ListView):
 
     model = Tweet
     template_name = "tweets/index.html"
-    queryset = Tweet.objects.prefetch_related("user").order_by("-created_at")
+    queryset = Tweet.objects.prefetch_related("user")
     ordering = "-created_at"
     login_url = reverse_lazy("accounts:login")
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
+        queryset = self.get_queryset()
         # ページネーション、画像リサイズを適用したツイートリストやツイート投稿フォームを含むコンテキストに更新
-        context.update(create_tweet_context_with_form(self.request, self.queryset))
+        context.update(create_tweet_context_with_form(self.request, queryset))
+
         return context
 
     # def get(self, *args, **kwargs):
