@@ -55,6 +55,14 @@ class CustomUser(AbstractUser, AbstractCommon):
             return self.icon_image.url
         return static("default_icon.png")
 
+    @property
+    def display_name(self):
+        """名前が設定されていれば返す、なければusernameを返す"""
+        if self.name and self.name.strip():
+            # 前後の空白を取り除く
+            return self.name.strip()
+        return self.username
+
     def post_login(self):
         """ログイン後処理"""
         # ログイン回数を増やす
