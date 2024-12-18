@@ -21,7 +21,7 @@ class Tweet(AbstractCommon):
     user = models.ForeignKey(
         CustomUser, on_delete=models.CASCADE, related_name="tweets"
     )
-    content = models.TextField("ツイート内容", max_length=140, null=False, blank=False)
+    content = models.CharField("ツイート内容", max_length=140, null=False, blank=False)
     image = models.ImageField("ツイート画像", upload_to="tweets/", blank=True)
 
     def __str__(self):
