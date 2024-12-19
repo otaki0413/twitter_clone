@@ -136,3 +136,12 @@ class TweetDetailView(DetailView):
 
     model = Tweet
     template_name = "tweets/detail.html"
+    queryset = Tweet.objects.prefetch_related("user")
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        tweet = self.get_object()
+        if tweet.image:
+            tweet.resized_image_url = get_resized_image_url(tweet.image.url, 300, 300)
+        context["tweet"] = tweet
+        return context

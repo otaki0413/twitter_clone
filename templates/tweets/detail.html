@@ -3,8 +3,9 @@
 {% block title %}ツイート詳細ページ{% endblock title %}
 
 {% block content %}
-<div>
-  <div class="d-flex align-items-center px-3" style="height: 54px">
+<div class="px-3 border-bottom border-secondary">
+  <!-- ヘッダーエリア -->
+  <div class="d-flex align-items-center" style="height: 54px">
     <div style="min-width: 56px">
       <a href="{{ request.META.HTTP_REFERER }}" class="text-white">
         <i class="bi bi-arrow-left"></i>
@@ -14,5 +15,127 @@
       <div class="fs-5 fw-bold">ツイート</div>
     </div>
   </div>
+
+  <!-- ツイート詳細 -->
+  <div class="pb-3 border-bottom border-secondary">
+    <div class="d-flex pt-2 mb-3">
+      <!-- プロフィール画像 -->
+      <a href="{% url 'profiles:my_tweet_list' tweet.user.username %}">
+        <img
+          src="{{ tweet.user.icon_image_url }}"
+          alt="ユーザーイメージ"
+          width="40"
+          height="40"
+          class="rounded-circle me-2"
+        />
+      </a>
+      <!-- プロフィール名など -->
+      <div class="flex-grow-1">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <span class="fw-bold d-block">{{ tweet.user.display_name }}</span>
+            <span class="text-secondary">@{{ tweet.user.username }}</span>
+          </div>
+          <div>
+            <i class="bi bi-three-dots"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- ツイート本文 -->
+    <div class="mb-3">
+      <p class="">{{ tweet.content }}</p>
+      <!-- 投稿画像があれば表示 -->
+      {% if tweet.resized_image_url %}
+        <div class="">
+          <img
+            src="{{ tweet.resized_image_url }}"
+            alt="投稿画像"
+          />
+        </div>
+      {% endif %}
+    </div>
+    <!-- タイムスタンプ -->
+    <div class="text-secondary fs-6">{{ tweet.created_at|date:"Y年n月j日・g:i" }}</div>
+  </div>
+
+  <!-- アイコンエリア -->
+  <div class="border-bottom border-secondary">
+    <div class="d-flex justify-content-between align-items-center py-3 px-2">
+      <i class="bi bi-chat"></i>
+      <i class="bi bi-repeat"></i>
+      <i class="bi bi-heart"></i>
+      <i class="bi bi-bookmark"></i>
+      <i class="bi bi-upload"></i>
+    </div>
+  </div>
+
+  <!-- コメントフォームエリア -->
+  <div class="py-3">
+    <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+      <div class="d-flex align-items-center gap-3">
+        <!-- ログインユーザーのアイコン -->
+        <a href="{% url "profiles:my_tweet_list" user.username %}">
+          <img
+            src="{{ user.icon_image_url }}"
+            alt="ユーザーイメージ"
+            width="40"
+            height="40"
+            class="rounded-circle"
+          />
+        </a>
+        <!-- 入力エリア -->
+        <textarea
+          type="text"
+          class="form-control flex-grow-1"
+          rows="2"
+          placeholder="返信を入力…"></textarea>
+        <button
+          type="submit"
+          class="btn btn-light rounded-pill px-4 fw-bold text-nowrap"
+          role="button"
+        >
+          返信
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- コメント一覧エリア -->
+<div class="py-3">
+  {% if tweet.comments.exists %}
+    {% for comment in tweet.comments.all %}
+      <div class="d-flex mb-3">
+        <!-- コメントユーザーのアイコン -->
+        <a href="{% url 'profiles:my_tweet_list' comment.user.username %}">
+          <img
+            src="{{ comment.user.icon_image_url }}"
+            alt="ユーザーイメージ"
+            width="40"
+            height="40"
+            class="rounded-circle me-2"
+          />
+        </a>
+        <!-- コメント内容 -->
+        <div class="flex-grow-1">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <span class="fw-bold d-block">{{ comment.user.display_name }}</span>
+              <span class="text-secondary">@{{ comment.user.username }}</span>
+              <p>{{ comment.content }}</p>
+            </div>
+            <div>
+              <i class="bi bi-three-dots"></i>
+            </div>
+          </div>
+          <div class="text-secondary fs-6">{{ comment.created_at|date:"Y年n月j日・g:i" }}</div>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="text-center">コメントはまだありません。</p>
+  {% endif %}
 </div>
 {% endblock content %}
