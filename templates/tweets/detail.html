@@ -43,25 +43,24 @@
       </div>
     </div>
     <!-- ツイート本文 -->
-    <div class="mb-3">
-      <p class="">{{ tweet.content }}</p>
+    <div>
+      <p>{{ tweet.content }}</p>
       <!-- 投稿画像があれば表示 -->
       {% if tweet.resized_image_url %}
-        <div class="">
+        <div class="mb-3">
           <img
             src="{{ tweet.resized_image_url }}"
             alt="投稿画像"
           />
         </div>
       {% endif %}
+      <div class="text-secondary fs-6">{{ tweet.created_at|date:"Y年n月j日・g:i" }}</div>
     </div>
-    <!-- タイムスタンプ -->
-    <div class="text-secondary fs-6">{{ tweet.created_at|date:"Y年n月j日・g:i" }}</div>
   </div>
 
   <!-- アイコンエリア -->
   <div class="border-bottom border-secondary">
-    <div class="d-flex justify-content-between align-items-center py-3 px-2">
+    <div class="d-flex justify-content-between align-items-center p-2">
       <i class="bi bi-chat"></i>
       <i class="bi bi-repeat"></i>
       <i class="bi bi-heart"></i>
@@ -90,7 +89,7 @@
           type="text"
           class="form-control flex-grow-1"
           rows="2"
-          placeholder="返信を入力…"></textarea>
+          placeholder="返信をツイート"></textarea>
         <button
           type="submit"
           class="btn btn-light rounded-pill px-4 fw-bold text-nowrap"
@@ -104,38 +103,29 @@
 </div>
 
 <!-- コメント一覧エリア -->
-<div class="py-3">
-  {% if tweet.comments.exists %}
-    {% for comment in tweet.comments.all %}
-      <div class="d-flex mb-3">
-        <!-- コメントユーザーのアイコン -->
-        <a href="{% url 'profiles:my_tweet_list' comment.user.username %}">
-          <img
-            src="{{ comment.user.icon_image_url }}"
-            alt="ユーザーイメージ"
-            width="40"
-            height="40"
-            class="rounded-circle me-2"
-          />
-        </a>
-        <!-- コメント内容 -->
-        <div class="flex-grow-1">
-          <div class="d-flex justify-content-between align-items-start">
-            <div>
-              <span class="fw-bold d-block">{{ comment.user.display_name }}</span>
-              <span class="text-secondary">@{{ comment.user.username }}</span>
-              <p>{{ comment.content }}</p>
-            </div>
-            <div>
-              <i class="bi bi-three-dots"></i>
-            </div>
-          </div>
-          <div class="text-secondary fs-6">{{ comment.created_at|date:"Y年n月j日・g:i" }}</div>
+{% if tweet.comments.exists %}
+  {% for comment in tweet.comments.all %}
+    <div class="d-flex px-3 py-2 border border-secondary">
+      <!-- コメントユーザーのアイコン -->
+      <a href="{% url 'profiles:my_tweet_list' comment.user.username %}">
+        <img
+          src="{{ comment.user.icon_image_url }}"
+          alt="ユーザーイメージ"
+          width="40"
+          height="40"
+          class="rounded-circle me-2"
+        />
+      </a>
+      <!-- コメント内容 -->
+      <div class="flex-grow-1">
+        <div class="d-flex align-items-center gap-1">
+          <div class="fw-bold">{{ comment.user.display_name }}</div>
+          <small class="text-secondary">
+            @{{ comment.user.username }}・{{ comment.created_at|date:"m月d日 H:i" }}
+          </small>
         </div>
-      </div>
-    {% endfor %}
-  {% else %}
-    <p class="text-center">コメントはまだありません。</p>
-  {% endif %}
-</div>
+        <div>{{ tweet.content }}</div>
+    </div>
+  {% endfor %}
+{% endif %}
 {% endblock content %}
