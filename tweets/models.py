@@ -77,7 +77,7 @@ class Comment(AbstractCommon):
     user = models.ForeignKey(
         CustomUser, on_delete=models.CASCADE, related_name="comments"
     )
-    tweet = models.ForeignKey(Tweet, on_delete=models.CASCADE)
+    tweet = models.ForeignKey(Tweet, on_delete=models.CASCADE, related_name="comments")
     content = models.TextField("コメント内容", null=False, blank=False)
 
     def __str__(self):
