@@ -8,9 +8,9 @@ from django.core.paginator import Paginator
 
 from config.utils import get_resized_image_url
 
-from .models import Tweet
+from .models import Tweet, Comment
 from accounts.models import FollowRelation
-from .forms import TweetCreateForm
+from .forms import TweetCreateForm, CommentCreateForm
 
 
 class TimelineView(LoginRequiredMixin, ListView):
@@ -144,4 +144,46 @@ class TweetDetailView(DetailView):
         if tweet.image:
             tweet.resized_image_url = get_resized_image_url(tweet.image.url, 300, 300)
         context["tweet"] = tweet
+        context["form"] = CommentCreateForm()
         return context
+
+
+class CommentCreateView(CreateView):
+    """コメント投稿ビュー"""
+
+    model = Comment
+    form_class = CommentCreateForm
+    template_name = "tweets/detail.html"
+
+    def get_success_url(self):
+        # ツイート詳細ページへリダイレクト
+        return reverse_lazy("tweets:tweet_detail", kwargs={"pk": self.kwargs["pk"]})
+
+    def form_valid(self, form):
+        # フォームからインスタンス取得（※まだ保存しない）
+        comment = form.save(commit=False)
+        # ユーザーの設定
+        comment.user = self.request.user
+        # ツイートの設定
+        comment.tweet = Tweet.objects.get(pk=self.kwargs["pk"])
+        comment.save()
+        messages.success(
+            self.request,
+            "コメントの投稿に成功しました。",
+            extra_tags="success",
+        )
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        # ツイート詳細のクエリセット
+        tweet = Tweet.objects.prefetch_related("user").get(pk=self.kwargs["pk"])
+        # 画像リサイズ適用
+        if tweet.image:
+            tweet.resized_image_url = get_resized_image_url(tweet.image.url, 300, 300)
+        # バリデーションエラー時の再描画用のコンテキスト生成
+        context = {
+            "tweet": tweet,
+            "form": form,
+        }
+        # ツイート詳細ページ再描画
+        return render(self.request, "tweets/detail.html", context)

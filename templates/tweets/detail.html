@@ -71,8 +71,8 @@
 
   <!-- コメントフォームエリア -->
   <div class="py-3">
-    <form method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
+    <form method="POST" action="{% url "tweets:comment_create" tweet.pk %}" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
       <div class="d-flex align-items-center gap-3">
         <!-- ログインユーザーのアイコン -->
         <a href="{% url "profiles:my_tweet_list" user.username %}">
@@ -85,16 +85,21 @@
           />
         </a>
         <!-- 入力エリア -->
-        <textarea
-          type="text"
-          class="form-control flex-grow-1"
-          rows="2"
-          placeholder="返信をツイート"></textarea>
+        <div class="flex-grow-1">
+          {{ form.content }}
+          {% if form.content.errors %}
+          <div class="text-danger">
+            {% for error in form.content.errors %}
+            <p>{{ error }}</p>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+        <!-- 送信ボタン -->
         <button
           type="submit"
           class="btn btn-light rounded-pill px-4 fw-bold text-nowrap"
-          role="button"
-        >
+          role="button">
           返信
         </button>
       </div>
@@ -124,8 +129,10 @@
             @{{ comment.user.username }}・{{ comment.created_at|date:"m月d日 H:i" }}
           </small>
         </div>
-        <div>{{ tweet.content }}</div>
+        <div>{{ comment.content }}</div>
+      </div>
     </div>
   {% endfor %}
 {% endif %}
+
 {% endblock content %}

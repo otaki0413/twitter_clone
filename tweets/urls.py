@@ -12,4 +12,9 @@ urlpatterns = [
     ),
     path("create/", views.TweetCreateView.as_view(), name="tweet_create"),
     path("tweets/<int:pk>/", views.TweetDetailView.as_view(), name="tweet_detail"),
+    path(
+        "tweets/<int:pk>/comment/",
+        views.CommentCreateView.as_view(),
+        name="comment_create",
+    ),
 ]
