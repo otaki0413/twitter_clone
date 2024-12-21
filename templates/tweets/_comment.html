@@ -1,0 +1,22 @@
+<div class="d-flex px-3 py-2 border border-secondary">
+  <!-- コメントユーザーのアイコン -->
+  <a href="{% url 'profiles:my_tweet_list' comment.user.username %}">
+    <img
+      src="{{ comment.user.icon_image_url }}"
+      alt="ユーザーイメージ"
+      width="40"
+      height="40"
+      class="rounded-circle me-2"
+    />
+  </a>
+  <!-- コメント内容 -->
+  <div class="flex-grow-1">
+    <div class="d-flex align-items-center gap-1">
+      <div class="fw-bold">{{ comment.user.display_name }}</div>
+      <small class="text-secondary">
+        @{{ comment.user.username }}・{{ comment.created_at|date:"m月d日 H:i" }}
+      </small>
+    </div>
+    <div>{{ comment.content }}</div>
+  </div>
+</div>
