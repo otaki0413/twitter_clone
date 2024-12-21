@@ -136,7 +136,7 @@ class TweetDetailView(DetailView):
 
     model = Tweet
     template_name = "tweets/detail.html"
-    queryset = Tweet.objects.prefetch_related("user")
+    queryset = Tweet.objects.select_related("user").prefetch_related("comments__user")
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -145,6 +145,7 @@ class TweetDetailView(DetailView):
             tweet.resized_image_url = get_resized_image_url(tweet.image.url, 300, 300)
         context["tweet"] = tweet
         context["form"] = CommentCreateForm()
+        context["comment_list"] = tweet.comments.all()
         return context
 
 
@@ -176,7 +177,11 @@ class CommentCreateView(CreateView):
 
     def form_invalid(self, form):
         # ツイート詳細のクエリセット
-        tweet = Tweet.objects.prefetch_related("user").get(pk=self.kwargs["pk"])
+        tweet = (
+            Tweet.objects.select_related("user")
+            .prefetch_related("comments__user")
+            .get(pk=self.kwargs["pk"])
+        )
         # 画像リサイズ適用
         if tweet.image:
             tweet.resized_image_url = get_resized_image_url(tweet.image.url, 300, 300)
@@ -184,6 +189,7 @@ class CommentCreateView(CreateView):
         context = {
             "tweet": tweet,
             "form": form,
+            "comment_list": tweet.comments.all(),
         }
         # ツイート詳細ページ再描画
         return render(self.request, "tweets/detail.html", context)

@@ -38,7 +38,7 @@
 
 <!-- コメント一覧エリア -->
 <div>
-  {% for comment in tweet.comments.all %}
+  {% for comment in comment_list %}
     {% include "tweets/_comment.html" %}
   {% endfor %}
 </div>
