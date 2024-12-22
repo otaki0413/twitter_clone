@@ -41,7 +41,7 @@ class Like(AbstractCommon):
         ]
 
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="likes")
-    tweet = models.ForeignKey(Tweet, on_delete=models.CASCADE)
+    tweet = models.ForeignKey(Tweet, on_delete=models.CASCADE, related_name="likes")
 
     def __str__(self):
         return f"[{self.id}] {self.user.username} like: {self.tweet.content}"
@@ -62,7 +62,7 @@ class Retweet(AbstractCommon):
     user = models.ForeignKey(
         CustomUser, on_delete=models.CASCADE, related_name="retweets"
     )
-    tweet = models.ForeignKey(Tweet, on_delete=models.CASCADE)
+    tweet = models.ForeignKey(Tweet, on_delete=models.CASCADE, related_name="retweets")
 
     def __str__(self):
         return f"[{self.id}] {self.user.username} retweet: {self.tweet.content}"
