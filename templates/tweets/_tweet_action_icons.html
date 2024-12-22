@@ -1,0 +1,17 @@
+{% load humanize %}
+
+<!-- ツイートに対するアクションを行うアイコンエリア -->
+<div class="d-flex justify-content-between align-items-center">
+  <i class="bi bi-chat"></i>
+  <i class="bi bi-repeat"></i>
+  <form method="POST" action="{% url 'tweets:like_toggle' %}">
+    {% csrf_token %}
+    <input type="hidden" name="tweet_id" value="{{ tweet.id }}">
+    <button type="submit" class="btn text-white">
+      <i class="bi bi-heart me-1"></i>
+      <span>{{ tweet.likes.count|intcomma|default:0 }}</span>
+    </button>
+  </form>
+  <i class="bi bi-bookmark"></i>
+  <i class="bi bi-upload"></i>
+</div>
