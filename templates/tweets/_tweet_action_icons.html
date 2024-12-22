@@ -4,7 +4,7 @@
 <div class="d-flex justify-content-between align-items-center">
   <i class="bi bi-chat"></i>
   <i class="bi bi-repeat"></i>
-  <form method="POST" action="{% url 'tweets:like_toggle' %}">
+  <form method="POST" action="{% url 'tweets:like_toggle' %}" class="z-2">
     {% csrf_token %}
     <input type="hidden" name="tweet_id" value="{{ tweet.id }}">
     <button type="submit" class="btn text-white">
