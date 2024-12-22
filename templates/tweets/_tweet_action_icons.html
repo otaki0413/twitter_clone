@@ -7,11 +7,24 @@
   <form method="POST" action="{% url 'tweets:like_toggle' %}" class="z-2">
     {% csrf_token %}
     <input type="hidden" name="tweet_id" value="{{ tweet.id }}">
-    <button type="submit" class="btn text-white">
-      <i class="bi bi-heart me-1"></i>
+    <button
+      type="submit"
+      class="btn {% if tweet_is_liked_by_user %}text-danger{% else %}text-white{% endif %} hover-text-danger">
+      {% if tweet_is_liked_by_user %}
+        <i class="bi bi-heart-fill me-1"></i>
+      {% else %}
+        <i class="bi bi-heart me-1"></i>
+      {% endif %}
       <span>{{ tweet.likes.count|intcomma|default:0 }}</span>
     </button>
   </form>
   <i class="bi bi-bookmark"></i>
   <i class="bi bi-upload"></i>
 </div>
+
+<!-- アイコンホバー時のテキスト色 -->
+<style>
+  .hover-text-danger:hover {
+    color: #dc3545 !important;
+  }
+</style>

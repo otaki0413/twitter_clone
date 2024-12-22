@@ -18,7 +18,7 @@ class TimelineView(LoginRequiredMixin, ListView):
 
     model = Tweet
     template_name = "tweets/index.html"
-    queryset = Tweet.objects.prefetch_related("user")
+    queryset = Tweet.objects.select_related("user").prefetch_related("likes")
     ordering = "-created_at"
     login_url = reverse_lazy("accounts:login")
 
@@ -54,7 +54,8 @@ class FollowingTweetListView(LoginRequiredMixin, ListView):
         # フォロー中のユーザのツイートを取得するクエリセットを返す
         return (
             Tweet.objects.filter(user_id__in=inner_qs)
-            .prefetch_related("user")
+            .select_related("user")
+            .prefetch_related("likes")
             .order_by("-created_at")
         )
 
@@ -93,7 +94,11 @@ class TweetCreateView(CreateView):
 
     def form_invalid(self, form):
         # ツイート一覧のクエリセット
-        tweet_queryset = Tweet.objects.prefetch_related("user").order_by("-created_at")
+        tweet_queryset = (
+            Tweet.objects.select_related("user")
+            .order_by("-created_at")
+            .prefetch_related("likes")
+        )
         # バリデーションエラー時の再描画用のコンテキスト生成
         context = create_tweet_context_with_form(self.request, tweet_queryset)
         # フォームのエラー情報を設定
@@ -123,6 +128,8 @@ def create_tweet_context_with_form(request, tweet_queryset: QuerySet = None):
                 tweet.resized_image_url = get_resized_image_url(
                     tweet.image.url, 150, 150
                 )
+            # ログインユーザがいいねしているかどうかを設定
+            tweet.is_liked_by_user = tweet.is_liked_by_user(request.user)
 
         # ページネーション済みデータをコンテキスト設定
         context["page_obj"] = page_obj
@@ -136,7 +143,11 @@ class TweetDetailView(DetailView):
 
     model = Tweet
     template_name = "tweets/detail.html"
-    queryset = Tweet.objects.select_related("user").prefetch_related("comments__user")
+    queryset = (
+        Tweet.objects.select_related("user")
+        .prefetch_related("comments")
+        .prefetch_related("likes")
+    )
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -146,6 +157,7 @@ class TweetDetailView(DetailView):
         context["tweet"] = tweet
         context["form"] = CommentCreateForm()
         context["comment_list"] = tweet.comments.all()
+        context["tweet_is_liked_by_user"] = tweet.is_liked_by_user(self.request.user)
         return context
 
 

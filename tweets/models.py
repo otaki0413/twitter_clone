@@ -27,6 +27,14 @@ class Tweet(AbstractCommon):
     def __str__(self):
         return f"{self.user.username}のツイート"
 
+    def is_liked_by_user(self, user):
+        """ログインユーザーがいいねしているかどうか"""
+        try:
+            self.likes.get(user=user)
+            return True
+        except Like.DoesNotExist:
+            return False
+
 
 class Like(AbstractCommon):
     """いいね情報の格納用モデル"""

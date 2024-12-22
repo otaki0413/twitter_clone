@@ -28,7 +28,7 @@
 
       <!-- アイコンエリア -->
       <div class="p-2 pb-0">
-        {% include "tweets/_tweet_action_icons.html" %}
+        {% include "tweets/_tweet_action_icons.html" with tweet_is_liked_by_user=tweet.is_liked_by_user %}
       </div>
     </div>
   </div>
