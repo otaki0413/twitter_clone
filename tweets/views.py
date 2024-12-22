@@ -151,7 +151,7 @@ class TweetDetailView(DetailView):
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        tweet = self.get_object()
+        tweet = self.object
         if tweet.image:
             tweet.resized_image_url = get_resized_image_url(tweet.image.url, 300, 300)
         context["tweet"] = tweet
