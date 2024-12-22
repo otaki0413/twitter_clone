@@ -1,4 +1,4 @@
-from django.views.generic import ListView, CreateView
+from django.views.generic import ListView, DetailView, CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.shortcuts import render, redirect
@@ -8,9 +8,9 @@ from django.core.paginator import Paginator
 
 from config.utils import get_resized_image_url
 
-from .models import Tweet
+from .models import Tweet, Comment
 from accounts.models import FollowRelation
-from .forms import TweetCreateForm
+from .forms import TweetCreateForm, CommentCreateForm
 
 
 class TimelineView(LoginRequiredMixin, ListView):
@@ -129,3 +129,67 @@ def create_tweet_context_with_form(request, tweet_queryset: QuerySet = None):
         context["tweet_list"] = page_obj.object_list
 
     return context
+
+
+class TweetDetailView(DetailView):
+    """ツイート詳細ビュー"""
+
+    model = Tweet
+    template_name = "tweets/detail.html"
+    queryset = Tweet.objects.select_related("user").prefetch_related("comments__user")
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        tweet = self.get_object()
+        if tweet.image:
+            tweet.resized_image_url = get_resized_image_url(tweet.image.url, 300, 300)
+        context["tweet"] = tweet
+        context["form"] = CommentCreateForm()
+        context["comment_list"] = tweet.comments.all()
+        return context
+
+
+class CommentCreateView(CreateView):
+    """コメント投稿ビュー"""
+
+    model = Comment
+    form_class = CommentCreateForm
+    template_name = "tweets/detail.html"
+
+    def get_success_url(self):
+        # ツイート詳細ページへリダイレクト
+        return reverse_lazy("tweets:tweet_detail", kwargs={"pk": self.kwargs["pk"]})
+
+    def form_valid(self, form):
+        # フォームからインスタンス取得（※まだ保存しない）
+        comment = form.save(commit=False)
+        # ユーザーの設定
+        comment.user = self.request.user
+        # ツイートの設定
+        comment.tweet = Tweet.objects.get(pk=self.kwargs["pk"])
+        comment.save()
+        messages.success(
+            self.request,
+            "コメントの投稿に成功しました。",
+            extra_tags="success",
+        )
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        # ツイート詳細のクエリセット
+        tweet = (
+            Tweet.objects.select_related("user")
+            .prefetch_related("comments__user")
+            .get(pk=self.kwargs["pk"])
+        )
+        # 画像リサイズ適用
+        if tweet.image:
+            tweet.resized_image_url = get_resized_image_url(tweet.image.url, 300, 300)
+        # バリデーションエラー時の再描画用のコンテキスト生成
+        context = {
+            "tweet": tweet,
+            "form": form,
+            "comment_list": tweet.comments.all(),
+        }
+        # ツイート詳細ページ再描画
+        return render(self.request, "tweets/detail.html", context)

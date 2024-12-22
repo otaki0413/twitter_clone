@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}ツイート詳細ページ{% endblock title %}
+
+{% block content %}
+<div class="px-3 border-bottom border-secondary">
+  <!-- ヘッダーエリア -->
+  <div class="d-flex align-items-center" style="height: 54px">
+    <div style="min-width: 56px">
+      <a href="{{ request.META.HTTP_REFERER }}" class="text-white">
+        <i class="bi bi-arrow-left"></i>
+      </a>
+    </div>
+    <div>
+      <div class="fs-5 fw-bold">ツイート</div>
+    </div>
+  </div>
+
+  <!-- ツイート詳細 -->
+  {% include "tweets/_tweet_detail.html" %}
+
+  <!-- アイコンエリア -->
+  <div class="border-bottom border-secondary">
+    <div class="d-flex justify-content-between align-items-center p-2">
+      <i class="bi bi-chat"></i>
+      <i class="bi bi-repeat"></i>
+      <i class="bi bi-heart"></i>
+      <i class="bi bi-bookmark"></i>
+      <i class="bi bi-upload"></i>
+    </div>
+  </div>
+
+  <!-- コメントフォームエリア -->
+  <div class="py-3">
+    {% include "tweets/_commentform.html" %}
+  </div>
+</div>
+
+<!-- コメント一覧エリア -->
+<div>
+  {% for comment in comment_list %}
+    {% include "tweets/_comment.html" %}
+  {% endfor %}
+</div>
+{% endblock content %}
