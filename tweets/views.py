@@ -1,4 +1,4 @@
-from django.views.generic import ListView, DetailView, CreateView
+from django.views.generic import ListView, DetailView, CreateView, View
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.shortcuts import render, redirect
@@ -8,7 +8,7 @@ from django.core.paginator import Paginator
 
 from config.utils import get_resized_image_url
 
-from .models import Tweet, Comment
+from .models import Tweet, Comment, Like
 from accounts.models import FollowRelation
 from .forms import TweetCreateForm, CommentCreateForm
 
@@ -193,3 +193,40 @@ class CommentCreateView(CreateView):
         }
         # ツイート詳細ページ再描画
         return render(self.request, "tweets/detail.html", context)
+
+
+class LikeToggleView(LoginRequiredMixin, View):
+    """いいね・いいね解除を切り替えるビュー"""
+
+    def post(self, request, *args, **kwargs):
+        # リクエストをもとにツイート情報を取得
+        tweet = Tweet.objects.get(pk=request.POST.get("tweet_id"))
+        # ログインユーザを取得
+        user = request.user
+
+        # 対象のいいね情報を取得
+        try:
+            target_like = Like.objects.get(user=user, tweet=tweet)
+        except Like.DoesNotExist:
+            target_like = None
+
+        # いいねの切り替え処理
+        if target_like is None:
+            # いいね追加
+            tweet.likes.create(user=user)
+            messages.success(
+                self.request,
+                "いいねをしました。",
+                extra_tags="success",
+            )
+        else:
+            # いいね削除
+            target_like.delete()
+            messages.success(
+                self.request,
+                "いいねを解除しました。",
+                extra_tags="success",
+            )
+
+        # 直前のページにリダイレクトする
+        return redirect(request.META.get("HTTP_REFERER", "tweets:timeline"))
