@@ -3,10 +3,20 @@
 <!-- ツイートに対するアクションを行うアイコンエリア -->
 <div class="d-flex justify-content-between align-items-center">
   <i class="bi bi-chat"></i>
-  <i class="bi bi-repeat"></i>
+  <form method="POST" action="{% url 'tweets:retweet_toggle' %}" class="z-2">
+    {% csrf_token %}
+    <input type="hidden" name="tweet_id" value="{{ tweet.id }}" />
+    <button
+      type="submit"
+      class="btn {% if tweet_is_retweeted_by_user %}text-success{% else %}text-white{% endif %} hover-text-success">
+      <i class="bi bi-repeat me-1"></i>
+      <span>{{ tweet.retweets.count|intcomma|default:0 }}</span>
+    </button>
+  </form>
+
   <form method="POST" action="{% url 'tweets:like_toggle' %}" class="z-2">
     {% csrf_token %}
-    <input type="hidden" name="tweet_id" value="{{ tweet.id }}">
+    <input type="hidden" name="tweet_id" value="{{ tweet.id }}" />
     <button
       type="submit"
       class="btn {% if tweet_is_liked_by_user %}text-danger{% else %}text-white{% endif %} hover-text-danger">
@@ -26,5 +36,8 @@
 <style>
   .hover-text-danger:hover {
     color: #dc3545 !important;
+  }
+  .hover-text-success:hover {
+    color: #198754 !important;
   }
 </style>

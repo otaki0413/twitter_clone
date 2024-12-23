@@ -18,4 +18,9 @@ urlpatterns = [
         name="comment_create",
     ),
     path("tweets/like-toggle", views.LikeToggleView.as_view(), name="like_toggle"),
+    path(
+        "tweets/retweet-toggle",
+        views.RetweetToggleView.as_view(),
+        name="retweet_toggle",
+    ),
 ]

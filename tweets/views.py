@@ -8,7 +8,7 @@ from django.core.paginator import Paginator
 
 from config.utils import get_resized_image_url
 
-from .models import Tweet, Comment, Like
+from .models import Tweet, Comment, Like, Retweet
 from accounts.models import FollowRelation
 from .forms import TweetCreateForm, CommentCreateForm
 
@@ -18,7 +18,11 @@ class TimelineView(LoginRequiredMixin, ListView):
 
     model = Tweet
     template_name = "tweets/index.html"
-    queryset = Tweet.objects.select_related("user").prefetch_related("likes")
+    queryset = (
+        Tweet.objects.select_related("user")
+        .prefetch_related("likes")
+        .prefetch_related("retweets")
+    )
     ordering = "-created_at"
     login_url = reverse_lazy("accounts:login")
 
@@ -56,6 +60,7 @@ class FollowingTweetListView(LoginRequiredMixin, ListView):
             Tweet.objects.filter(user_id__in=inner_qs)
             .select_related("user")
             .prefetch_related("likes")
+            .prefetch_related("retweets")
             .order_by("-created_at")
         )
 
@@ -98,6 +103,7 @@ class TweetCreateView(CreateView):
             Tweet.objects.select_related("user")
             .order_by("-created_at")
             .prefetch_related("likes")
+            .prefetch_related("retweets")
         )
         # バリデーションエラー時の再描画用のコンテキスト生成
         context = create_tweet_context_with_form(self.request, tweet_queryset)
@@ -130,6 +136,8 @@ def create_tweet_context_with_form(request, tweet_queryset: QuerySet = None):
                 )
             # ログインユーザがいいねしているかどうかを設定
             tweet.is_liked_by_user = tweet.is_liked_by_user(request.user)
+            # ログインユーザがリツイートしているかどうかを設定
+            tweet.is_retweeted_by_user = tweet.is_retweeted_by_user(request.user)
 
         # ページネーション済みデータをコンテキスト設定
         context["page_obj"] = page_obj
@@ -147,6 +155,7 @@ class TweetDetailView(DetailView):
         Tweet.objects.select_related("user")
         .prefetch_related("comments")
         .prefetch_related("likes")
+        .prefetch_related("retweets")
     )
 
     def get_context_data(self, *args, **kwargs):
@@ -158,6 +167,9 @@ class TweetDetailView(DetailView):
         context["form"] = CommentCreateForm()
         context["comment_list"] = tweet.comments.all()
         context["tweet_is_liked_by_user"] = tweet.is_liked_by_user(self.request.user)
+        context["tweet_is_retweeted_by_user"] = tweet.is_retweeted_by_user(
+            self.request.user
+        )
         return context
 
 
@@ -237,6 +249,43 @@ class LikeToggleView(LoginRequiredMixin, View):
             messages.success(
                 self.request,
                 "いいねを解除しました。",
+                extra_tags="success",
+            )
+
+        # 直前のページにリダイレクトする
+        return redirect(request.META.get("HTTP_REFERER", "tweets:timeline"))
+
+
+class RetweetToggleView(LoginRequiredMixin, View):
+    """リツイート・リツイート解除を切り替えるビュー"""
+
+    def post(self, request, *args, **kwargs):
+        # リクエストをもとにツイート情報を取得
+        tweet = Tweet.objects.get(pk=request.POST.get("tweet_id"))
+        # ログインユーザを取得
+        user = request.user
+
+        # 対象のリツイート情報を取得
+        try:
+            target_retweet = tweet.retweets.get(user=user)
+        except Retweet.DoesNotExist:
+            target_retweet = None
+
+        # リツイートの切り替え処理
+        if target_retweet is None:
+            # リツイート
+            tweet.retweets.create(user=user)
+            messages.success(
+                self.request,
+                "リツイートしました。",
+                extra_tags="success",
+            )
+        else:
+            # リツイート解除
+            target_retweet.delete()
+            messages.success(
+                self.request,
+                "リツイートを解除しました。",
                 extra_tags="success",
             )
 

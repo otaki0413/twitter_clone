@@ -35,6 +35,14 @@ class Tweet(AbstractCommon):
         except Like.DoesNotExist:
             return False
 
+    def is_retweeted_by_user(self, user):
+        """ログインユーザーがリツイートしているかどうか"""
+        try:
+            self.retweets.get(user=user)
+            return True
+        except Retweet.DoesNotExist:
+            return False
+
 
 class Like(AbstractCommon):
     """いいね情報の格納用モデル"""
