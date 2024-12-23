@@ -27,6 +27,14 @@ class Tweet(AbstractCommon):
     def __str__(self):
         return f"{self.user.username}のツイート"
 
+    def is_liked_by_user(self, user):
+        """ログインユーザーがいいねしているかどうか"""
+        try:
+            self.likes.get(user=user)
+            return True
+        except Like.DoesNotExist:
+            return False
+
 
 class Like(AbstractCommon):
     """いいね情報の格納用モデル"""
@@ -41,7 +49,7 @@ class Like(AbstractCommon):
         ]
 
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="likes")
-    tweet = models.ForeignKey(Tweet, on_delete=models.CASCADE)
+    tweet = models.ForeignKey(Tweet, on_delete=models.CASCADE, related_name="likes")
 
     def __str__(self):
         return f"[{self.id}] {self.user.username} like: {self.tweet.content}"
@@ -62,7 +70,7 @@ class Retweet(AbstractCommon):
     user = models.ForeignKey(
         CustomUser, on_delete=models.CASCADE, related_name="retweets"
     )
-    tweet = models.ForeignKey(Tweet, on_delete=models.CASCADE)
+    tweet = models.ForeignKey(Tweet, on_delete=models.CASCADE, related_name="retweets")
 
     def __str__(self):
         return f"[{self.id}] {self.user.username} retweet: {self.tweet.content}"

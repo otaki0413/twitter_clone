@@ -1,4 +1,4 @@
-<div class="p-2 border-bottom border-secondary position-relative">
+<div class="px-3 py-2 border-bottom border-secondary position-relative">
   <!-- ツイート全体のリンク -->
   <a href="{% url "tweets:tweet_detail" tweet.pk %}" class="stretched-link"></a>
 
@@ -25,6 +25,11 @@
       {% if tweet.resized_image_url %}
         <img src="{{ tweet.resized_image_url }}" alt="投稿画像}">
       {% endif %}
+
+      <!-- アイコンエリア -->
+      <div class="p-2 pb-0">
+        {% include "tweets/_tweet_action_icons.html" with tweet_is_liked_by_user=tweet.is_liked_by_user %}
+      </div>
     </div>
   </div>
 </div>

@@ -1,4 +1,4 @@
-from django.views.generic import ListView, DetailView, CreateView
+from django.views.generic import ListView, DetailView, CreateView, View
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.shortcuts import render, redirect
@@ -8,7 +8,7 @@ from django.core.paginator import Paginator
 
 from config.utils import get_resized_image_url
 
-from .models import Tweet, Comment
+from .models import Tweet, Comment, Like
 from accounts.models import FollowRelation
 from .forms import TweetCreateForm, CommentCreateForm
 
@@ -18,7 +18,7 @@ class TimelineView(LoginRequiredMixin, ListView):
 
     model = Tweet
     template_name = "tweets/index.html"
-    queryset = Tweet.objects.prefetch_related("user")
+    queryset = Tweet.objects.select_related("user").prefetch_related("likes")
     ordering = "-created_at"
     login_url = reverse_lazy("accounts:login")
 
@@ -54,7 +54,8 @@ class FollowingTweetListView(LoginRequiredMixin, ListView):
         # フォロー中のユーザのツイートを取得するクエリセットを返す
         return (
             Tweet.objects.filter(user_id__in=inner_qs)
-            .prefetch_related("user")
+            .select_related("user")
+            .prefetch_related("likes")
             .order_by("-created_at")
         )
 
@@ -93,7 +94,11 @@ class TweetCreateView(CreateView):
 
     def form_invalid(self, form):
         # ツイート一覧のクエリセット
-        tweet_queryset = Tweet.objects.prefetch_related("user").order_by("-created_at")
+        tweet_queryset = (
+            Tweet.objects.select_related("user")
+            .order_by("-created_at")
+            .prefetch_related("likes")
+        )
         # バリデーションエラー時の再描画用のコンテキスト生成
         context = create_tweet_context_with_form(self.request, tweet_queryset)
         # フォームのエラー情報を設定
@@ -123,6 +128,8 @@ def create_tweet_context_with_form(request, tweet_queryset: QuerySet = None):
                 tweet.resized_image_url = get_resized_image_url(
                     tweet.image.url, 150, 150
                 )
+            # ログインユーザがいいねしているかどうかを設定
+            tweet.is_liked_by_user = tweet.is_liked_by_user(request.user)
 
         # ページネーション済みデータをコンテキスト設定
         context["page_obj"] = page_obj
@@ -136,16 +143,21 @@ class TweetDetailView(DetailView):
 
     model = Tweet
     template_name = "tweets/detail.html"
-    queryset = Tweet.objects.select_related("user").prefetch_related("comments__user")
+    queryset = (
+        Tweet.objects.select_related("user")
+        .prefetch_related("comments")
+        .prefetch_related("likes")
+    )
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        tweet = self.get_object()
+        tweet = self.object
         if tweet.image:
             tweet.resized_image_url = get_resized_image_url(tweet.image.url, 300, 300)
         context["tweet"] = tweet
         context["form"] = CommentCreateForm()
         context["comment_list"] = tweet.comments.all()
+        context["tweet_is_liked_by_user"] = tweet.is_liked_by_user(self.request.user)
         return context
 
 
@@ -193,3 +205,40 @@ class CommentCreateView(CreateView):
         }
         # ツイート詳細ページ再描画
         return render(self.request, "tweets/detail.html", context)
+
+
+class LikeToggleView(LoginRequiredMixin, View):
+    """いいね・いいね解除を切り替えるビュー"""
+
+    def post(self, request, *args, **kwargs):
+        # リクエストをもとにツイート情報を取得
+        tweet = Tweet.objects.get(pk=request.POST.get("tweet_id"))
+        # ログインユーザを取得
+        user = request.user
+
+        # 対象のいいね情報を取得
+        try:
+            target_like = Like.objects.get(user=user, tweet=tweet)
+        except Like.DoesNotExist:
+            target_like = None
+
+        # いいねの切り替え処理
+        if target_like is None:
+            # いいね追加
+            tweet.likes.create(user=user)
+            messages.success(
+                self.request,
+                "いいねをしました。",
+                extra_tags="success",
+            )
+        else:
+            # いいね削除
+            target_like.delete()
+            messages.success(
+                self.request,
+                "いいねを解除しました。",
+                extra_tags="success",
+            )
+
+        # 直前のページにリダイレクトする
+        return redirect(request.META.get("HTTP_REFERER", "tweets:timeline"))
