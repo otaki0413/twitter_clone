@@ -153,7 +153,7 @@ class TweetDetailView(DetailView):
     template_name = "tweets/detail.html"
     queryset = (
         Tweet.objects.select_related("user")
-        .prefetch_related("comments")
+        .prefetch_related("comments__user")
         .prefetch_related("likes")
         .prefetch_related("retweets")
     )
@@ -165,7 +165,6 @@ class TweetDetailView(DetailView):
             tweet.resized_image_url = get_resized_image_url(tweet.image.url, 300, 300)
         context["tweet"] = tweet
         context["form"] = CommentCreateForm()
-        context["comment_list"] = tweet.comments.all()
         context["tweet_is_liked_by_user"] = tweet.is_liked_by_user(self.request.user)
         context["tweet_is_retweeted_by_user"] = tweet.is_retweeted_by_user(
             self.request.user
@@ -213,7 +212,6 @@ class CommentCreateView(CreateView):
         context = {
             "tweet": tweet,
             "form": form,
-            "comment_list": tweet.comments.all(),
         }
         # ツイート詳細ページ再描画
         return render(self.request, "tweets/detail.html", context)
