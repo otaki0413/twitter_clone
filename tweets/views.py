@@ -164,14 +164,15 @@ class TweetDetailView(DetailView):
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
         tweet = self.object
+        # 画像リサイズ適用
         if tweet.image:
             tweet.resized_image_url = get_resized_image_url(tweet.image.url, 300, 300)
+        # ログインユーザがいいねしているか設定
+        tweet.is_liked_by_user = tweet.is_liked_by_user(self.request.user)
+        # ログインユーザがリツイートしているか設定
+        tweet.is_retweeted_by_user = tweet.is_retweeted_by_user(self.request.user)
         context["tweet"] = tweet
         context["form"] = CommentCreateForm()
-        context["tweet_is_liked_by_user"] = tweet.is_liked_by_user(self.request.user)
-        context["tweet_is_retweeted_by_user"] = tweet.is_retweeted_by_user(
-            self.request.user
-        )
         return context
 
 
@@ -211,6 +212,11 @@ class CommentCreateView(CreateView):
         # 画像リサイズ適用
         if tweet.image:
             tweet.resized_image_url = get_resized_image_url(tweet.image.url, 300, 300)
+        # ログインユーザがいいねしているか設定
+        tweet.is_liked_by_user = tweet.is_liked_by_user(self.request.user)
+        # ログインユーザがリツイートしているか設定
+        tweet.is_retweeted_by_user = tweet.is_retweeted_by_user(self.request.user)
+
         # バリデーションエラー時の再描画用のコンテキスト生成
         context = {
             "tweet": tweet,
