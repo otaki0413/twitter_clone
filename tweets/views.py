@@ -207,6 +207,8 @@ class CommentCreateView(CreateView):
         tweet = (
             Tweet.objects.select_related("user")
             .prefetch_related("comments__user")
+            .prefetch_related("likes")
+            .prefetch_related("retweets")
             .get(pk=self.kwargs["pk"])
         )
         # 画像リサイズ適用
