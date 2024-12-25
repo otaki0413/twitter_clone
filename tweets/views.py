@@ -183,6 +183,11 @@ class CommentCreateView(CreateView):
     form_class = CommentCreateForm
     template_name = "tweets/detail.html"
 
+    def get(self, request, *args, **kwargs):
+        # GETリクエスト時には詳細へリダイレクトさせる
+        # MEMO:コメント投稿のフォームエラー時にURLが`/tweets/{int:pk}/comment`となるのに対処するために、リダイレクト先を明示的に指定
+        return redirect("tweets:tweet_detail", pk=self.kwargs["pk"])
+
     def get_success_url(self):
         # ツイート詳細ページへリダイレクト
         return reverse_lazy("tweets:tweet_detail", kwargs={"pk": self.kwargs["pk"]})
