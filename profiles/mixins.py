@@ -6,19 +6,31 @@ from config.utils import get_resized_image_url
 
 
 class TweetListMixin:
-    """ツイート一覧を取得し、画像のリサイズを設定する共通処理"""
+    """ツイート一覧を取得し、画像リサイズやログインユーザーのいいね/リツイート情報を付与する処理"""
 
     def get_tweet_list(
         self, tweet_queryset: QuerySet, order_by: str = "-created_at"
-    ) -> QuerySet:
+    ) -> QuerySet | None:
         """対象のクエリセットに並び替えオプション追加、リサイズ済みの画像URLを付与する"""
-        tweet_queryset = tweet_queryset.order_by(order_by)
-        for tweet in tweet_queryset:
-            if tweet.image:
-                tweet.resized_image_url = get_resized_image_url(
-                    tweet.image.url, 150, 150
-                )
-        return tweet_queryset
+        if tweet_queryset:
+            tweet_queryset = tweet_queryset.order_by(order_by)
+            # ログインユーザがいいねしているツイートID取得
+            liked_tweet_ids = self.request.user.likes.values_list("tweet_id", flat=True)
+            # ログインユーザがリツイートしているツイートID取得
+            retweeted_tweet_ids = self.request.user.retweets.values_list(
+                "tweet_id", flat=True
+            )
+            for tweet in tweet_queryset:
+                if tweet.image:
+                    tweet.resized_image_url = get_resized_image_url(
+                        tweet.image.url, 150, 150
+                    )
+                # ログインユーザがいいねしているか設定
+                tweet.is_liked_by_user = tweet.id in liked_tweet_ids
+                # ログインユーザがリツイートしているか設定
+                tweet.is_retweeted_by_user = tweet.id in retweeted_tweet_ids
+            return tweet_queryset
+        return None
 
 
 class LoginUserIsUserMixin(UserPassesTestMixin):

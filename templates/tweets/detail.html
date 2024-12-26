@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% load humanize %}
 
 {% block title %}ツイート詳細ページ{% endblock title %}
 
@@ -33,7 +32,7 @@
 
 <!-- コメント一覧エリア -->
 <div>
-  {% for comment in comment_list %}
+  {% for comment in tweet.comments.all %}
     {% include "tweets/_comment.html" %}
   {% endfor %}
 </div>
