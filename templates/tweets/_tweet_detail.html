@@ -17,8 +17,27 @@
           <span class="fw-bold d-block">{{ tweet.user.display_name }}</span>
           <span class="text-secondary">@{{ tweet.user.username }}</span>
         </div>
-        <div>
-          <i class="bi bi-three-dots"></i>
+        <div class="btn-group">
+          <button class="btn text-white" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-dark">
+            <li>
+              <form method="POST" action="{% url 'accounts:follow_toggle' %}">
+                {% csrf_token %}
+                <input type="hidden" name="user_id" value="{{ tweet.user.id }}" />
+                {% if tweet.user.is_followed_by_user  %}
+                  <button class="dropdown-item">
+                    {{ tweet.user.username }}さんをフォロー解除する
+                  </button>
+                {% else %}
+                  <button class="dropdown-item">
+                    {{ tweet.user.username }}さんをフォローする
+                  </button>
+                {% endif %}
+              </form>
+            <li>
+          </ul>
         </div>
       </div>
     </div>

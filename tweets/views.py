@@ -177,6 +177,11 @@ class TweetDetailView(DetailView):
         tweet.is_liked_by_user = tweet.is_liked_by_user(self.request.user)
         # ログインユーザがリツイートしているか設定
         tweet.is_retweeted_by_user = tweet.is_retweeted_by_user(self.request.user)
+        # ログインユーザーがフォローしているか設定
+        tweet.user.is_followed_by_user = tweet.user.is_followed_by_user(
+            self.request.user
+        )
+
         context["tweet"] = tweet
         context["form"] = CommentCreateForm()
         return context
