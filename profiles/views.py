@@ -25,7 +25,7 @@ class MyTweetListView(LoginRequiredMixin, DetailView, TweetListMixin):
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
         # 現在のユーザー取得
-        current_user = self.get_object()
+        current_user = self.object
         # 投稿したツイートを取得
         context["tweet_list"] = self.get_tweet_list(current_user.tweets)
         return context
@@ -44,7 +44,7 @@ class LikedTweetListView(LoginRequiredMixin, DetailView, TweetListMixin):
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
         # 現在のユーザー取得
-        current_user = self.get_object()
+        current_user = self.object
         # いいねしたツイートIDを取得するクエリセット作成
         liked_tweet_ids = current_user.likes.values_list("tweet_id", flat=True)
         # いいねしたツイートを取得
@@ -67,7 +67,7 @@ class RetweetedTweetListView(LoginRequiredMixin, DetailView, TweetListMixin):
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
         # 現在のユーザー取得
-        current_user = self.get_object()
+        current_user = self.object
         # リツイートしたツイートIDを取得するクエリセット作成
         retweeted_tweet_ids = current_user.retweets.values_list("tweet_id", flat=True)
         # リツイートしたツイートを取得
@@ -90,7 +90,7 @@ class CommentedTweetListView(LoginRequiredMixin, DetailView, TweetListMixin):
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
         # 現在のユーザー取得
-        current_user = self.get_object()
+        current_user = self.object
         # コメントしたツイートIDを取得するクエリセット作成
         commented_tweet_ids = current_user.comments.values_list("tweet_id", flat=True)
         # コメントしたツイートを取得
