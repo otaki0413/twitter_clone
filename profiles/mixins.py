@@ -13,7 +13,9 @@ class TweetListMixin:
     ) -> QuerySet | None:
         """対象のクエリセットに並び替えオプション追加、リサイズ済みの画像URLを付与する"""
         if tweet_queryset:
-            tweet_queryset = tweet_queryset.order_by(order_by)
+            tweet_queryset = tweet_queryset.order_by(order_by).prefetch_related(
+                "likes", "retweets"
+            )
             # ログインユーザがいいねしているツイートID取得
             liked_tweet_ids = self.request.user.likes.values_list("tweet_id", flat=True)
             # ログインユーザがリツイートしているツイートID取得
