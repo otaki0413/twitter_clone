@@ -42,6 +42,22 @@ class TweetListMixin:
         return None
 
 
+# TODO:プロフィールページに関するすべてのビューでこのmixinを継承したいが、なぜか処理が呼ばれないので一旦コメントアウト
+# class FollowStatusMixin:
+#     """ログインユーザーがフォローしているかどうかを設定する処理"""
+
+#     def get_context_data(self, *args, **kwargs):
+#         """フォロー関係をチェックし、コンテキストに設定する処理"""
+#         context = super().get_context_data(*args, **kwargs)
+#         # ログインユーザーを取得
+#         current_user = self.object
+#         # ログインユーザーがフォローしているか設定
+#         context["is_followed_by_user"] = current_user.is_followed_by_user(
+#             self.request.user
+#         )
+#         return context
+
+
 class LoginUserIsUserMixin(UserPassesTestMixin):
     """ログインユーザーと対象ユーザーが一致しているかをチェックする処理"""
 

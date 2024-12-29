@@ -57,8 +57,12 @@
         プロフィールを編集
       </a>
     {% else %}
-      <!-- TODO:フォロー・未フォローに応じて表示を変える -->
-      <button class="btn btn-dark border border-secondary rounded-pill fw-bold px-3 ms-auto">フォロー中 OR 未フォロー</button>
+      <!-- フォロー・未フォローに応じて表示を変える -->
+      {% if is_followed_by_user %}
+        <button class="btn btn-dark text-danger border border-danger rounded-pill fw-bold px-3 ms-auto">フォロー解除</button>
+      {% else %}
+        <button class="btn btn-dark border border-secondary rounded-pill fw-bold px-3 ms-auto">フォローする</button>
+      {% endif %}
     {% endif %}
   </div>
   <div>
