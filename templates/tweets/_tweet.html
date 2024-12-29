@@ -2,7 +2,7 @@
   <!-- ツイート全体のリンク -->
   <a href="{% url "tweets:tweet_detail" tweet.pk %}" class="stretched-link"></a>
 
-  <div class="d-flex align-items-start">
+  <div class="d-flex">
     <!-- プロフィールへのリンク -->
     <a href="{% url "profiles:my_tweet_list" tweet.user.username %}" class="position-relative z-2">
       <img
@@ -14,8 +14,8 @@
       />
     </a>
     <div class="flex-grow-1">
-      <div class="d-flex align-items-center justify-content-between">
-        <div class="d-flex gap-1">
+      <div class="d-flex align-items-start justify-content-between">
+        <div class="d-flex align-items-center gap-1">
           <div class="fw-bold">{{ tweet.user.display_name }}</div>
           <small class="text-secondary">
             @{{ tweet.user.username }}・{{ tweet.created_at|date:"m月d日 H:i" }}
@@ -52,7 +52,6 @@
             {% endif %}
           </ul>
         </div>
-
       </div>
       <div>{{ tweet.content }}</div>
       <!-- 投稿画像があれば表示 -->
