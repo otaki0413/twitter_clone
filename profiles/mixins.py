@@ -22,6 +22,11 @@ class TweetListMixin:
             retweeted_tweet_ids = self.request.user.retweets.values_list(
                 "tweet_id", flat=True
             )
+            # ログインユーザーがフォローしているユーザーID取得
+            followed_user_ids = self.request.user.following_relations.values_list(
+                "followee_id", flat=True
+            )
+
             for tweet in tweet_queryset:
                 if tweet.image:
                     tweet.resized_image_url = get_resized_image_url(
@@ -31,8 +36,26 @@ class TweetListMixin:
                 tweet.is_liked_by_user = tweet.id in liked_tweet_ids
                 # ログインユーザがリツイートしているか設定
                 tweet.is_retweeted_by_user = tweet.id in retweeted_tweet_ids
+                # ログインユーザーがフォローしているか設定
+                tweet.user.is_followed_by_user = tweet.user.id in followed_user_ids
             return tweet_queryset
         return None
+
+
+# TODO:プロフィールページに関するすべてのビューでこのmixinを継承したいが、なぜか処理が呼ばれないので一旦コメントアウト
+# class FollowStatusMixin:
+#     """ログインユーザーがフォローしているかどうかを設定する処理"""
+
+#     def get_context_data(self, *args, **kwargs):
+#         """フォロー関係をチェックし、コンテキストに設定する処理"""
+#         context = super().get_context_data(*args, **kwargs)
+#         # ログインユーザーを取得
+#         current_user = self.object
+#         # ログインユーザーがフォローしているか設定
+#         context["is_followed_by_user"] = current_user.is_followed_by_user(
+#             self.request.user
+#         )
+#         return context
 
 
 class LoginUserIsUserMixin(UserPassesTestMixin):

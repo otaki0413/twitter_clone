@@ -63,6 +63,14 @@ class CustomUser(AbstractUser, AbstractCommon):
             return self.name.strip()
         return self.username
 
+    def is_followed_by_user(self, user):
+        """ログインユーザーがフォローしているかどうか"""
+        try:
+            self.follower_relations.get(follower=user)
+            return True
+        except FollowRelation.DoesNotExist:
+            return False
+
     def post_login(self):
         """ログイン後処理"""
         # ログイン回数を増やす

@@ -32,6 +32,10 @@ def create_tweet_context_with_form(request, tweet_queryset: QuerySet = None):
         liked_tweet_ids = request.user.likes.values_list("tweet_id", flat=True)
         # ログインユーザがリツイートしているツイートID取得
         retweeted_tweet_ids = request.user.retweets.values_list("tweet_id", flat=True)
+        # ログインユーザーがフォローしているユーザーID取得
+        followed_user_ids = request.user.following_relations.values_list(
+            "followee_id", flat=True
+        )
 
         for tweet in page_obj.object_list:
             # 画像リサイズ適用
@@ -43,6 +47,8 @@ def create_tweet_context_with_form(request, tweet_queryset: QuerySet = None):
             tweet.is_liked_by_user = tweet.id in liked_tweet_ids
             # ログインユーザがリツイートしているか設定
             tweet.is_retweeted_by_user = tweet.id in retweeted_tweet_ids
+            # ログインユーザーがフォローしているか設定
+            tweet.user.is_followed_by_user = tweet.user.id in followed_user_ids
 
         # ページネーション済みデータをコンテキスト設定
         context["page_obj"] = page_obj
@@ -171,6 +177,11 @@ class TweetDetailView(DetailView):
         tweet.is_liked_by_user = tweet.is_liked_by_user(self.request.user)
         # ログインユーザがリツイートしているか設定
         tweet.is_retweeted_by_user = tweet.is_retweeted_by_user(self.request.user)
+        # ログインユーザーがフォローしているか設定
+        tweet.user.is_followed_by_user = tweet.user.is_followed_by_user(
+            self.request.user
+        )
+
         context["tweet"] = tweet
         context["form"] = CommentCreateForm()
         return context
