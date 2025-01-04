@@ -16,13 +16,16 @@
     <div class="container-fluid min-vh-100 d-flex flex-column" style="max-width: 1280px;">
       {% include "_header.html" %}
       <div class="row flex-grow-1 justify-content-center border-top border-secondary">
-        <div class="d-none d-md-block col-md-3">
+        <div class="d-none d-sm-block col-sm-2 d-lg-none">
+          {% include "_sidebar_icons_only.html" %}
+        </div>
+        <div class="d-none d-lg-block col-lg-3">
           {% include "_sidebar.html" %}
         </div>
-        <main class="col-12 col-md-5 border-start border-end border-secondary overflow-hidden p-0">
+        <main class="col-12 col-sm-10 col-md-8 col-lg-5 border-start border-end border-secondary overflow-hidden p-0">
           {% block content %}{% endblock %}
         </main>
-        <div class="d-none d-md-block col-md-4 p-3">
+        <div class="d-none d-lg-block col-lg-4 p-3">
           {% include "_trend.html" %}
         </div>
       </div>
