@@ -43,6 +43,14 @@ class Tweet(AbstractCommon):
         except Retweet.DoesNotExist:
             return False
 
+    def is_bookmarked_by_user(self, user):
+        """ログインユーザーがブックマークしているかどうか"""
+        try:
+            self.bookmarks.get(user=user)
+            return True
+        except Bookmark.DoesNotExist:
+            return False
+
 
 class Like(AbstractCommon):
     """いいね情報の格納用モデル"""

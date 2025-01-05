@@ -23,4 +23,9 @@ urlpatterns = [
         views.RetweetToggleView.as_view(),
         name="retweet_toggle",
     ),
+    path(
+        "tweets/bookmark-toggle",
+        views.BookmarkToggleView.as_view(),
+        name="bookmark_toggle",
+    ),
 ]

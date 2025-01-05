@@ -8,7 +8,7 @@ from django.core.paginator import Paginator
 
 from config.utils import get_resized_image_url
 
-from .models import Tweet, Comment, Like, Retweet
+from .models import Tweet, Comment, Like, Retweet, Bookmark
 from accounts.models import FollowRelation
 from .forms import TweetCreateForm, CommentCreateForm
 
@@ -32,6 +32,8 @@ def create_tweet_context_with_form(request, tweet_queryset: QuerySet = None):
         liked_tweet_ids = request.user.likes.values_list("tweet_id", flat=True)
         # ログインユーザがリツイートしているツイートID取得
         retweeted_tweet_ids = request.user.retweets.values_list("tweet_id", flat=True)
+        # ログインユーザがブックマークしているツイートID取得
+        bookmarked_tweet_ids = request.user.bookmarks.values_list("tweet_id", flat=True)
         # ログインユーザーがフォローしているユーザーID取得
         followed_user_ids = request.user.following_relations.values_list(
             "followee_id", flat=True
@@ -47,6 +49,8 @@ def create_tweet_context_with_form(request, tweet_queryset: QuerySet = None):
             tweet.is_liked_by_user = tweet.id in liked_tweet_ids
             # ログインユーザがリツイートしているか設定
             tweet.is_retweeted_by_user = tweet.id in retweeted_tweet_ids
+            # ログインユーザがブックマークしているか設定
+            tweet.is_bookmarked_by_user = tweet.id in bookmarked_tweet_ids
             # ログインユーザーがフォローしているか設定
             tweet.user.is_followed_by_user = tweet.user.id in followed_user_ids
 
@@ -62,10 +66,8 @@ class TimelineView(LoginRequiredMixin, ListView):
 
     model = Tweet
     template_name = "tweets/index.html"
-    queryset = (
-        Tweet.objects.select_related("user")
-        .prefetch_related("likes")
-        .prefetch_related("retweets")
+    queryset = Tweet.objects.select_related("user").prefetch_related(
+        "likes", "retweets", "bookmarks"
     )
     ordering = "-created_at"
     login_url = reverse_lazy("accounts:login")
@@ -101,8 +103,7 @@ class FollowingTweetListView(LoginRequiredMixin, ListView):
         return (
             Tweet.objects.filter(user_id__in=inner_qs)
             .select_related("user")
-            .prefetch_related("likes")
-            .prefetch_related("retweets")
+            .prefetch_related("likes", "retweets", "bookmarks")
             .order_by("-created_at")
         )
 
@@ -144,8 +145,7 @@ class TweetCreateView(CreateView):
         tweet_queryset = (
             Tweet.objects.select_related("user")
             .order_by("-created_at")
-            .prefetch_related("likes")
-            .prefetch_related("retweets")
+            .prefetch_related("likes", "retweets", "bookmarks")
         )
         # バリデーションエラー時の再描画用のコンテキスト生成
         context = create_tweet_context_with_form(self.request, tweet_queryset)
@@ -163,8 +163,7 @@ class TweetDetailView(DetailView):
     queryset = (
         Tweet.objects.select_related("user")
         .prefetch_related("comments__user")
-        .prefetch_related("likes")
-        .prefetch_related("retweets")
+        .prefetch_related("likes", "retweets", "bookmarks")
     )
 
     def get_context_data(self, *args, **kwargs):
@@ -177,6 +176,8 @@ class TweetDetailView(DetailView):
         tweet.is_liked_by_user = tweet.is_liked_by_user(self.request.user)
         # ログインユーザがリツイートしているか設定
         tweet.is_retweeted_by_user = tweet.is_retweeted_by_user(self.request.user)
+        # ログインユーザがブックマークしているか設定
+        tweet.is_bookmarked_by_user = tweet.is_bookmarked_by_user(self.request.user)
         # ログインユーザーがフォローしているか設定
         tweet.user.is_followed_by_user = tweet.user.is_followed_by_user(
             self.request.user
@@ -222,9 +223,7 @@ class CommentCreateView(CreateView):
         # ツイート詳細のクエリセット
         tweet = (
             Tweet.objects.select_related("user")
-            .prefetch_related("comments__user")
-            .prefetch_related("likes")
-            .prefetch_related("retweets")
+            .prefetch_related("comments__user", "likes", "retweets", "bookmarks")
             .get(pk=self.kwargs["pk"])
         )
         # 画像リサイズ適用
@@ -234,6 +233,8 @@ class CommentCreateView(CreateView):
         tweet.is_liked_by_user = tweet.is_liked_by_user(self.request.user)
         # ログインユーザがリツイートしているか設定
         tweet.is_retweeted_by_user = tweet.is_retweeted_by_user(self.request.user)
+        # ログインユーザがブックマークしているか設定
+        tweet.is_bookmarked_by_user = tweet.is_bookmarked_by_user(self.request.user)
 
         # バリデーションエラー時の再描画用のコンテキスト生成
         context = {
@@ -311,6 +312,43 @@ class RetweetToggleView(LoginRequiredMixin, View):
             messages.success(
                 self.request,
                 "リツイートを解除しました。",
+                extra_tags="success",
+            )
+
+        # 直前のページにリダイレクトする
+        return redirect(request.META.get("HTTP_REFERER", "tweets:timeline"))
+
+
+class BookmarkToggleView(LoginRequiredMixin, View):
+    """ブックマーク・ブックマーク解除を切り替えるビュー"""
+
+    def post(self, request, *args, **kwargs):
+        # リクエストをもとにツイート情報を取得
+        tweet = Tweet.objects.get(pk=request.POST.get("tweet_id"))
+        # ログインユーザを取得
+        user = request.user
+
+        # 対象のブックマーク情報を取得
+        try:
+            target_bookmark = tweet.bookmarks.get(user=user)
+        except Bookmark.DoesNotExist:
+            target_bookmark = None
+
+        # ブックマークの切り替え処理
+        if target_bookmark is None:
+            # ブックマーク
+            tweet.bookmarks.create(user=user)
+            messages.success(
+                self.request,
+                "ブックマークしました。",
+                extra_tags="success",
+            )
+        else:
+            # ブックマーク解除
+            target_bookmark.delete()
+            messages.success(
+                self.request,
+                "ブックマークを解除しました。",
                 extra_tags="success",
             )
 
