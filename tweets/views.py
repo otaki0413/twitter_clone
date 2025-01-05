@@ -114,6 +114,14 @@ class FollowingTweetListView(LoginRequiredMixin, ListView):
         return context
 
 
+class BookmarkListView(LoginRequiredMixin, ListView):
+    """ブックマーク"""
+
+    model = Tweet
+    template_name = "tweets/bookmark.html"
+    login_url = reverse_lazy("accounts:login")
+
+
 class TweetCreateView(CreateView):
     """ツイート投稿用のビュー"""
 

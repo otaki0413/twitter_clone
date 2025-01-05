@@ -10,6 +10,7 @@ urlpatterns = [
         views.FollowingTweetListView.as_view(),
         name="following",
     ),
+    path("bookmark/", views.BookmarkListView.as_view(), name="bookmark"),
     path("create/", views.TweetCreateView.as_view(), name="tweet_create"),
     path("tweets/<int:pk>/", views.TweetDetailView.as_view(), name="tweet_detail"),
     path(
