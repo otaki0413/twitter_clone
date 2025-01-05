@@ -32,14 +32,16 @@
         </a>
       {% endif %}
     </li>
-    <li class="mt-5">
-      <img
-        src="{{ user.icon_image_url }}"
-        alt="プロフィール画像"
-        width="40"
-        height="40"
-        class="rounded-circle"
-      />
-    </li>
+    {% if user.is_authenticated %}
+      <li class="mt-5">
+        <img
+          src="{{ user.icon_image_url }}"
+          alt="プロフィール画像"
+          width="40"
+          height="40"
+          class="rounded-circle"
+        />
+      </li>
+    {% endif %}
   </ul>
 </nav>
