@@ -1,7 +1,5 @@
-<nav
-  class="d-flex flex-column pt-3 text-white"
-  style="width: 240px"
->
+<!-- アイコンとアイコン名のサイドバー -->
+<nav class="d-flex flex-column pt-3 text-white">
   <ul class="nav flex-column gap-2 mb-4 fs-5">
     <li class="nav-item">
       <a href="{% url "tweets:timeline" %}" class="nav-link text-white">
@@ -28,35 +26,26 @@
       </a>
     </li>
     <li class="nav-item">
-      {% if user.is_authenticated %}
-        <a href="{% url "profiles:my_tweet_list" user.username %}" class="nav-link text-white">
-          <i class="bi bi-person me-2"></i>
-          <span>プロフィール</span>
-        </a>
-      {% else %}
-        <a href="{% url "accounts:login" %}" class="nav-link text-white">
-          <i class="bi bi-person me-2"></i>
-          <span>プロフィール</span>
-        </a>
-      {% endif %}
+      <a href="{% url "profiles:my_tweet_list" user.username %}" class="nav-link text-white">
+        <i class="bi bi-person me-2"></i>
+        <span>プロフィール</span>
+      </a>
     </li>
   </ul>
-  {% if user.is_authenticated %}
-    <div class="px-2">
-      <button type="submit" class="btn btn-primary rounded-pill px-5 py-2 fw-bold">ツイートする</button>
-      <div class="d-flex align-items-start mt-5">
-        <img
-          src="{{ user.icon_image_url }}"
-          alt="プロフィール画像"
-          width="40"
-          height="40"
-          class="rounded-circle me-2"
-        />
-        <div>
-          <div class="fw-bold">{{ user.display_name }}</div>
-          <small class="text-secondary">@{{ user.username }}</small>
-        </div>
+  <div class="px-2">
+    <button type="submit" class="btn btn-primary rounded-pill px-5 py-2 fw-bold">ツイートする</button>
+    <div class="d-flex align-items-start mt-5">
+      <img
+        src="{{ user.icon_image_url }}"
+        alt="プロフィール画像"
+        width="40"
+        height="40"
+        class="rounded-circle me-2"
+      />
+      <div>
+        <div class="fw-bold">{{ user.display_name }}</div>
+        <small class="text-secondary">@{{ user.username }}</small>
       </div>
     </div>
-  {% endif %}
+  </div>
 </nav>

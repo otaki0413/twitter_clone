@@ -1,4 +1,4 @@
-<header class="p-3 border-bottom border-secondary">
+<header class="p-3">
   <div class="d-flex align-items-center justify-content-between">
     <div class="fs-4">
       <a href="{% url "tweets:timeline" %}" class="text-white text-decoration-none">
@@ -8,10 +8,27 @@
     </div>
     <div class="d-flex gap-2">
       {% if user.is_authenticated %}
-        <form action="{% url "account_logout" %}" method="POST">
-        {% csrf_token %}
-          <button type="submit" class="btn btn-light rounded-pill">ログアウト</button>
-        </form>
+        <!-- ドロップダウンメニュー -->
+        <div class="dropdown d-block d-sm-none">
+          <button
+            class="btn btn-secondary dropdown-toggle"
+            type="button"
+            id="dropdownMenuButton"
+            data-bs-toggle="dropdown"
+            aria-expanded="false">
+            <i class="bi bi-justify"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownMenuButton">
+            {% include "_dropdown_menu_items.html" %}
+          </ul>
+        </div>
+        <!-- TODO: 将来的に下記は必要なくなるかもしれない -->
+        <div class="d-none d-sm-block">
+          <form action="{% url "account_logout" %}" method="POST">
+          {% csrf_token %}
+            <button type="submit" class="btn btn-secondary rounded-pill fw-bold">ログアウト</button>
+          </form>
+        </div>
       {% else %}
         <a href="{% url "accounts:login" %}" class="btn btn-light rounded-pill" role="button">ログイン</a>
         <a href="{% url "accounts:signup" %}" class="btn btn-light rounded-pill" role="button">新規登録</a>
