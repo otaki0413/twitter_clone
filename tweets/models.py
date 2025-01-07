@@ -43,6 +43,14 @@ class Tweet(AbstractCommon):
         except Retweet.DoesNotExist:
             return False
 
+    def is_bookmarked_by_user(self, user):
+        """ログインユーザーがブックマークしているかどうか"""
+        try:
+            self.bookmarks.get(user=user)
+            return True
+        except Bookmark.DoesNotExist:
+            return False
+
 
 class Like(AbstractCommon):
     """いいね情報の格納用モデル"""
@@ -82,6 +90,27 @@ class Retweet(AbstractCommon):
 
     def __str__(self):
         return f"[{self.id}] {self.user.username} retweet: {self.tweet.content}"
+
+
+class Bookmark(AbstractCommon):
+    """ブックマーク情報の格納用モデル"""
+
+    class Meta:
+        db_table = "bookmark"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "tweet"],
+                name="unique_bookmark_relation",
+            )
+        ]
+
+    user = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="bookmarks"
+    )
+    tweet = models.ForeignKey(Tweet, on_delete=models.CASCADE, related_name="bookmarks")
+
+    def __str__(self):
+        return f"[{self.id}] {self.user.username} bookmark: {self.tweet.content}"
 
 
 class Comment(AbstractCommon):

@@ -6,7 +6,7 @@ from config.utils import get_resized_image_url
 
 
 class TweetListMixin:
-    """ツイート一覧を取得し、画像リサイズやログインユーザーのいいね/リツイート情報を付与する処理"""
+    """ツイート一覧を取得し、画像リサイズやログインユーザーのいいね/リツイート/ブックマーク情報を付与する処理"""
 
     def get_tweet_list(
         self, tweet_queryset: QuerySet, order_by: str = "-created_at"
@@ -14,12 +14,16 @@ class TweetListMixin:
         """対象のクエリセットに並び替えオプション追加、リサイズ済みの画像URLを付与する"""
         if tweet_queryset:
             tweet_queryset = tweet_queryset.order_by(order_by).prefetch_related(
-                "likes", "retweets"
+                "likes", "retweets", "bookmarks"
             )
             # ログインユーザがいいねしているツイートID取得
             liked_tweet_ids = self.request.user.likes.values_list("tweet_id", flat=True)
             # ログインユーザがリツイートしているツイートID取得
             retweeted_tweet_ids = self.request.user.retweets.values_list(
+                "tweet_id", flat=True
+            )
+            # ログインユーザがブックマークしているツイートID取得
+            bookmarked_tweet_ids = self.request.user.bookmarks.values_list(
                 "tweet_id", flat=True
             )
             # ログインユーザーがフォローしているユーザーID取得
@@ -36,6 +40,8 @@ class TweetListMixin:
                 tweet.is_liked_by_user = tweet.id in liked_tweet_ids
                 # ログインユーザがリツイートしているか設定
                 tweet.is_retweeted_by_user = tweet.id in retweeted_tweet_ids
+                # ログインユーザーがブックマークしているか設定
+                tweet.is_bookmarked_by_user = tweet.id in bookmarked_tweet_ids
                 # ログインユーザーがフォローしているか設定
                 tweet.user.is_followed_by_user = tweet.user.id in followed_user_ids
             return tweet_queryset

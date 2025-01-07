@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}ブックマークページ{% endblock title %}
+
+{% block content %}
+<div class="px-3 border-bottom border-secondary">
+  <!-- ヘッダーエリア -->
+  <div class="d-flex align-items-center" style="height: 54px">
+    <div style="min-width: 56px">
+      <a href="{{ request.META.HTTP_REFERER }}" class="text-white">
+        <i class="bi bi-arrow-left"></i>
+      </a>
+    </div>
+    <div>
+      <div class="fs-5 fw-bold">ブックマーク</div>
+    </div>
+  </div>
+</div>
+
+<!-- ブックマーク一覧 -->
+<div>
+  {% if tweet_list  %}
+    {% for tweet in tweet_list  %}
+      {% include "tweets/_tweet.html" %}
+    {% endfor %}
+  {% else %}
+    <div class="mt-5">
+      <p class="text-center">ブックマークは存在しません</p>
+    </div>
+  {% endif %}
+</div>
+
+<!-- ページネーション -->
+<div class="mt-3">
+  {% include "tweets/_pagenation.html" %}
+</div>
+
+{% endblock content %}
