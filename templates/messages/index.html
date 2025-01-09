@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}メッセージ一覧ページ{% endblock title %}
+
+{% block content %}
+<div class="px-3 border-bottom border-secondary">
+  <!-- ヘッダーエリア -->
+  <div class="d-flex align-items-center" style="height: 54px">
+    <div style="min-width: 56px">
+      <a href="{{ request.META.HTTP_REFERER }}" class="text-white">
+        <i class="bi bi-arrow-left"></i>
+      </a>
+    </div>
+    <div>
+      <div class="fs-5 fw-bold">メッセージ</div>
+    </div>
+  </div>
+</div>
+
+
+
+{% endblock content %}
