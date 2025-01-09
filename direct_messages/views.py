@@ -6,3 +6,11 @@ class MessageListView(TemplateView):
     """メッセージ一覧ビュー"""
 
     template_name = "messages/index.html"
+
+
+class MessageRoomView(TemplateView):
+    """メッセージ部屋ビュー"""
+
+    slug_field = "username"
+    slug_url_kwarg = "username"
+    template_name = "messages/message_room.html"

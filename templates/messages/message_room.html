@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}メッセージ部屋ページ{% endblock title %}
+
+{% block content %}
+<div class="px-3 border-bottom border-secondary">
+  <!-- ヘッダーエリア -->
+  <div class="d-flex align-items-center" style="height: 54px">
+    <div style="min-width: 56px">
+      <a href="{% url "direct_messages:message_list" %}" class="text-white">
+        <i class="bi bi-arrow-left"></i>
+      </a>
+    </div>
+    <div>
+      <div class="fs-5 fw-bold">メッセージ部屋</div>
+    </div>
+  </div>
+</div>
+
+
+
+{% endblock content %}
