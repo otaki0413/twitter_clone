@@ -17,6 +17,17 @@
   </div>
 </div>
 
-
+<!-- メッセージ一覧 -->
+<div>
+  {% if followers %}
+    {% for follower in followers %}
+      {% include "direct_messages/_message_room_link.html" %}
+    {% endfor %}
+  {% else %}
+    <div class="mt-5">
+      <p class="text-center">メッセージを送れるユーザーは存在しません</p>
+    </div>
+  {% endif %}
+</div>
 
 {% endblock content %}
