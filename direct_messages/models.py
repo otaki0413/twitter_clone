@@ -1,3 +1,4 @@
+from django.utils import timezone
 from django.db import models
 from accounts.models import CustomUser
 
@@ -17,12 +18,6 @@ class Message(AbstractCommon):
 
     class Meta:
         db_table = "message"
-        constraints = [
-            models.UniqueConstraint(
-                fields=["sender", "receiver"],
-                name="unique_message_relation",
-            )
-        ]
 
     sender = models.ForeignKey(
         CustomUser, on_delete=models.CASCADE, related_name="sent_messages"
@@ -31,3 +26,14 @@ class Message(AbstractCommon):
         CustomUser, on_delete=models.CASCADE, related_name="received_messages"
     )
     content = models.TextField("メッセージ内容", null=False, blank=False)
+
+    def __str__(self):
+        format_time = timezone.localtime(self.created_at).strftime("%Y/%M/%d %H:%M:%S")
+        return f"[{self.sender} -> {self.receiver}] {self.content} ({format_time})"
+
+    @classmethod
+    def get_messages(cls, sender, receiver):
+        """送信者と受信者のメッセージ履歴を取得する"""
+        return cls.objects.filter(sender=sender, receiver=receiver).order_by(
+            "created_at"
+        )
