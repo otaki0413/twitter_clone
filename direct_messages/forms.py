@@ -14,7 +14,7 @@ class MessageCreateForm(forms.ModelForm):
                 attrs={
                     "placeholder": "新しいメッセージを作成",
                     "rows": 1,
-                    "class": "form-control",
+                    "class": "form-control py-2",
                 }
             )
         }

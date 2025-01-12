@@ -3,10 +3,10 @@
 {% block title %}メッセージ部屋ページ{% endblock title %}
 
 {% block content %}
-<div class="px-3 border-bottom border-secondary">
+<div class="px-3 border-bottom border-secondary bg-dark sticky-top">
   <!-- ヘッダーエリア -->
-  <div class="d-flex align-items-center" style="height: 54px">
-    <div style="min-width: 56px">
+  <div class="d-flex align-items-center" style="height: 54px;">
+    <div style="min-width: 56px;">
       <a href="{% url "direct_messages:message_list" %}" class="text-white">
         <i class="bi bi-arrow-left"></i>
       </a>
@@ -17,22 +17,21 @@
   </div>
 </div>
 
-<div class="px-3 mh-100 overflow-y-auto border-bottom border-secondary">
-  <!-- ユーザー詳細 -->
-  <div class="border-bottom border-secondary position-relative" style="height: 300px;">
-    {% include "direct_messages/_follower_info.html" %}
+<div class="d-flex flex-column" style="height: calc(100% - 54px);">
+  <div class="flex-grow-1 px-3 overflow-y-auto">
+    <!-- ユーザー詳細 -->
+    <div class="border-bottom border-secondary position-relative">
+      {% include "direct_messages/_follower_info.html" %}
+    </div>
+    <!-- メッセージエリア -->
+    <div class="bg-danger mb-5" style="height: 400px;">
+      ここにメッセージを表示します。
+    </div>
   </div>
 
-  <!-- メッセージエリア -->
-  <div style="height: 500px;">
-    ここにメッセージを表示します。
+  <!-- コメントフォームエリア -->
+  <div class="p-3 border-top border-secondary sticky-bottom" style="">
+    {% include "direct_messages/_messageform.html" %}
   </div>
 </div>
-
-<!-- コメントフォームエリア -->
-<div>
-  {% include "direct_messages/_messageform.html" %}
-</div>
-
-
 {% endblock content %}
