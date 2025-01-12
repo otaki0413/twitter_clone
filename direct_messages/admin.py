@@ -1,3 +1,9 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import Message
+
+
+@admin.register(Message)
+class MessageAdmin(admin.ModelAdmin):
+    model = Message
+    readonly_fields = ("created_at", "updated_at")
