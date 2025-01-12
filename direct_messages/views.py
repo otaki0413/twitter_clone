@@ -1,20 +1,21 @@
 from django.views.generic import ListView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from accounts.models import CustomUser
+from accounts.models import CustomUser, FollowRelation
 
 
 class MessageListView(LoginRequiredMixin, ListView):
     """メッセージ一覧ビュー"""
 
+    model = FollowRelation
     template_name = "direct_messages/index.html"
     context_object_name = "followers"
 
     def get_queryset(self):
         # ログインユーザ取得
         user = self.request.user
-        # ログインユーザのフォロワー取得
-        return CustomUser.objects.filter(following_relations__followee=user)
+        # ログインユーザーのフォロワー取得
+        return FollowRelation.get_followers(user)
 
 
 class MessageRoomView(LoginRequiredMixin, DetailView):

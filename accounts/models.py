@@ -106,3 +106,13 @@ class FollowRelation(AbstractCommon):
 
     def __str__(self):
         return f"{self.follower.username} -> {self.followee.username}"
+
+    @classmethod
+    def get_followings(cls, user):
+        """特定ユーザーがフォローしている人を取得する"""
+        return cls.objects.filter(follower=user).select_related("followee")
+
+    @classmethod
+    def get_followers(cls, user):
+        """特定ユーザーをフォローしている人を取得する"""
+        return cls.objects.filter(followee=user).select_related("follower")

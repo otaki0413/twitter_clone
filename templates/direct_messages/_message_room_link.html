@@ -1,12 +1,12 @@
 <div class="p-3 border-bottom border-secondary position-relative">
   <!-- メッセージ部屋へのリンク -->
-  <a href="{% url "direct_messages:message_room" follower.username %}" class="stretched-link"></a>
+  <a href="{% url "direct_messages:message_room" relation.follower.username %}" class="stretched-link"></a>
 
   <div class="d-flex">
     <!-- プロフィールページへのリンク -->
-    <a href="{% url 'profiles:my_tweet_list' follower.username %}" class="position-relative z-2">
+    <a href="{% url 'profiles:my_tweet_list' relation.follower.username %}" class="position-relative z-2">
       <img
-        src="{{ follower.icon_image_url }}"
+        src="{{ relation.follower.icon_image_url }}"
         alt="ユーザーイメージ"
         width="40"
         height="40"
@@ -15,9 +15,9 @@
     </a>
     <div class="flex-grow-1">
       <div class="d-flex align-items-center gap-1">
-        <div class="fw-bold">{{ follower.display_name }}</div>
+        <div class="fw-bold">{{ relation.follower.display_name }}</div>
         <small class="text-secondary">
-          @{{ follower.username }}
+          @{{ relation.follower.username }}
         </small>
       </div>
     </div>
