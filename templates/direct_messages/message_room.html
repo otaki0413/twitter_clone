@@ -12,13 +12,27 @@
       </a>
     </div>
     <div>
-      <!-- フォロワー名 -->
       <div class="fs-5 fw-bold">{{ follower.display_name }}</div>
     </div>
-
   </div>
 </div>
 
+<div class="px-3 mh-100 overflow-y-auto border-bottom border-secondary">
+  <!-- ユーザー詳細 -->
+  <div class="border-bottom border-secondary position-relative" style="height: 300px;">
+    {% include "direct_messages/_follower_info.html" %}
+  </div>
+
+  <!-- メッセージエリア -->
+  <div style="height: 500px;">
+    ここにメッセージを表示します。
+  </div>
+</div>
+
+<!-- コメントフォームエリア -->
+<div>
+  {% include "direct_messages/_messageform.html" %}
+</div>
 
 
 {% endblock content %}
