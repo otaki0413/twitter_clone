@@ -1,5 +1,6 @@
 from django.utils import timezone
 from django.db import models
+from django.db.models import Q
 from accounts.models import CustomUser
 
 
@@ -34,6 +35,6 @@ class Message(AbstractCommon):
     @classmethod
     def get_messages(cls, sender, receiver):
         """送信者と受信者のメッセージ履歴を取得する"""
-        return cls.objects.filter(sender=sender, receiver=receiver).order_by(
-            "created_at"
-        )
+        return cls.objects.filter(
+            Q(sender=sender, receiver=receiver) | Q(sender=receiver, receiver=sender)
+        ).order_by("created_at")
