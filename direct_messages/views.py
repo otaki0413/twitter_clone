@@ -33,10 +33,9 @@ class MessageRoomView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # メーセージ送信先を取得して、メッセージ履歴をセット
-        receiver = get_object_or_404(CustomUser, username=self.kwargs["username"])
+        # メッセージ履歴をセット
         context["message_history"] = Message.get_messages(
-            sender=self.request.user, receiver=receiver
+            sender=self.request.user, receiver=self.object
         )
         # メッセージ送信フォームをセット
         context["form"] = MessageCreateForm
