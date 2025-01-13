@@ -60,15 +60,17 @@ class MessageCreateView(LoginRequiredMixin, CreateView):
             "direct_messages:message_room", kwargs={"username": self.kwargs["username"]}
         )
 
+    def get_receiver(self):
+        """メッセージ受信者を取得する"""
+        return get_object_or_404(CustomUser, username=self.kwargs["username"])
+
     def form_valid(self, form):
         # フォームからインスタンス取得（※まだ保存しない）
         message = form.save(commit=False)
 
         # フォームインスタンスに送信者と受信者を設定
         message.sender = self.request.user
-        message.receiver = get_object_or_404(
-            CustomUser, username=self.kwargs["username"]
-        )
+        message.receiver = self.get_receiver()
         # フォームデータ保存
         message.save()
         messages.success(
@@ -85,6 +87,9 @@ class MessageCreateView(LoginRequiredMixin, CreateView):
         context = self.get_context_data()
         context["follower"] = get_object_or_404(
             CustomUser, username=self.kwargs["username"]
+        )
+        context["message_history"] = Message.get_messages(
+            sender=self.request.user, receiver=self.get_receiver()
         )
         # メッセージ部屋ページ再描画
         return render(self.request, "direct_messages/message_room.html", context)
