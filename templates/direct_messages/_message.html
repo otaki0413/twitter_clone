@@ -6,7 +6,7 @@
       </div>
     </div>
     <div class="p-1 text-start">
-      <small class="text-secondary">{{ message.created_at }}</small>
+      <small class="text-secondary">{{ message.created_at|date:"Y年n月j日 A f" }}</small>
     </div>
   </div>
 {% elif message.sender == user %}
@@ -17,7 +17,7 @@
       </div>
     </div>
     <div class="p-1 text-end">
-      <small class="text-secondary">{{ message.created_at }}</small>
+      <small class="text-secondary">{{ message.created_at|date:"Y年n月j日 A f" }}</small>
     </div>
   </div>
 {% endif %}
