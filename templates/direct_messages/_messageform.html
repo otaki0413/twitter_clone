@@ -5,13 +5,6 @@
     <!-- 入力エリア -->
     <div class="flex-grow-1">
       {{ form.content }}
-      {% if form.content.errors %}
-      <div class="text-danger">
-        {% for error in form.content.errors %}
-        <p>{{ error }}</p>
-        {% endfor %}
-      </div>
-      {% endif %}
     </div>
     <!-- 送信ボタン -->
     <button type="submit" class="btn btn-light rounded-pill" role="button">
@@ -19,3 +12,11 @@
     </button>
   </div>
 </form>
+<!-- フォームエラー文 -->
+{% if form.content.errors %}
+  <div class="text-danger">
+    {% for error in form.content.errors %}
+      <p>{{ error }}</p>
+    {% endfor %}
+  </div>
+{% endif %}
