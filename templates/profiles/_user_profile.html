@@ -62,7 +62,7 @@
       <div class="ms-auto">
         <div class="d-flex align-items-center gap-2">
 
-          {% if tweet.user.is_following  %}
+          {% if is_following  %}
             <!-- ツイート投稿者が自身のフォロワーの場合、アイコン表示 -->
             <div class="border border-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
               <a href="{% url "direct_messages:message_room" user_profile.username %}" class="text-white">
