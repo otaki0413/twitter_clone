@@ -31,6 +31,22 @@ class MessageRoomView(LoginRequiredMixin, DetailView):
     template_name = "direct_messages/message_room.html"
     context_object_name = "follower"
 
+    def get(self, request, *args, **kwargs):
+        # パスパラメータを元に対象ユーザー取得
+        user = get_object_or_404(CustomUser, username=self.kwargs["username"])
+        # メッセージ部屋のユーザーがフォロワーでない場合はアクセスさせないようにする
+        if not FollowRelation.is_following(follower=user, followee=request.user):
+            messages.success(
+                self.request,
+                "フォロワーではないユーザーにメッセージは送信できません。",
+                extra_tags="danger",
+            )
+            # 直前のページにリダイレクトする
+            return redirect(
+                request.META.get("HTTP_REFERER", "direct_messages:message_list")
+            )
+        return super().get(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # メッセージ履歴をセット

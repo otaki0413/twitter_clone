@@ -116,3 +116,8 @@ class FollowRelation(AbstractCommon):
     def get_followers(cls, user):
         """特定ユーザーをフォローしている人を取得する"""
         return cls.objects.filter(followee=user).select_related("follower")
+
+    @classmethod
+    def is_following(cls, follower, followee):
+        """対象ユーザーがフォローしているかどうか確認する"""
+        return cls.objects.filter(follower=follower, followee=followee).exists()
