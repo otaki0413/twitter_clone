@@ -61,11 +61,16 @@
       <!-- 他ユーザーのプロフィールの場合 -->
       <div class="ms-auto">
         <div class="d-flex align-items-center gap-2">
-          <div class="border border-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-            <a href="{% url "direct_messages:message_room" user_profile.username %}" class="text-white">
-              <i class="bi bi-envelope"></i>
-            </a>
-          </div>
+
+          {% if tweet.user.is_following  %}
+            <!-- ツイート投稿者が自身のフォロワーの場合、アイコン表示 -->
+            <div class="border border-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+              <a href="{% url "direct_messages:message_room" user_profile.username %}" class="text-white">
+                <i class="bi bi-envelope"></i>
+              </a>
+            </div>
+          {% endif %}
+
           <form method="POST" action="{% url 'accounts:follow_toggle' %}">
             {% csrf_token %}
             <input type="hidden" name="user_id" value="{{ user_profile.id }}" />

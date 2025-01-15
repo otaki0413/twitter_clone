@@ -30,6 +30,10 @@ class TweetListMixin:
             followed_user_ids = self.request.user.following_relations.values_list(
                 "followee_id", flat=True
             )
+            # ログインユーザーのフォロワーID取得
+            follower_ids = self.request.user.follower_relations.values_list(
+                "follower_id", flat=True
+            )
 
             for tweet in tweet_queryset:
                 if tweet.image:
@@ -44,6 +48,8 @@ class TweetListMixin:
                 tweet.is_bookmarked_by_user = tweet.id in bookmarked_tweet_ids
                 # ログインユーザーがフォローしているか設定
                 tweet.user.is_followed_by_user = tweet.user.id in followed_user_ids
+                # ツイート投稿者がフォロワーかどうか設定
+                tweet.user.is_following = tweet.user.id in follower_ids
             return tweet_queryset
         return None
 

@@ -38,6 +38,10 @@ def create_tweet_context_with_form(request, tweet_queryset: QuerySet = None):
         followed_user_ids = request.user.following_relations.values_list(
             "followee_id", flat=True
         )
+        # ログインユーザーのフォロワーID取得
+        follower_ids = request.user.follower_relations.values_list(
+            "follower_id", flat=True
+        )
 
         for tweet in page_obj.object_list:
             # 画像リサイズ適用
@@ -53,6 +57,8 @@ def create_tweet_context_with_form(request, tweet_queryset: QuerySet = None):
             tweet.is_bookmarked_by_user = tweet.id in bookmarked_tweet_ids
             # ログインユーザーがフォローしているか設定
             tweet.user.is_followed_by_user = tweet.user.id in followed_user_ids
+            # ツイート投稿者がフォロワーかどうか設定
+            tweet.user.is_following = tweet.user.id in follower_ids
 
         # ページネーション済みデータをコンテキスト設定
         context["page_obj"] = page_obj
@@ -208,6 +214,8 @@ class TweetDetailView(DetailView):
         tweet.user.is_followed_by_user = tweet.user.is_followed_by_user(
             self.request.user
         )
+        # 投稿者がフォロワーかどうか設定
+        tweet.user.is_following = self.request.user.is_followed_by_user(tweet.user)
 
         context["tweet"] = tweet
         context["form"] = CommentCreateForm()
