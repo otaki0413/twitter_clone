@@ -4,7 +4,7 @@ from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
 
-from accounts.models import CustomUser, FollowRelation
+from accounts.models import CustomUser
 from .models import Message
 from .forms import MessageCreateForm
 
@@ -12,14 +12,14 @@ from .forms import MessageCreateForm
 class MessageListView(LoginRequiredMixin, ListView):
     """メッセージ一覧ビュー"""
 
-    model = FollowRelation
+    model = CustomUser
     template_name = "direct_messages/index.html"
     context_object_name = "followers"
 
     def get_queryset(self):
         user = self.request.user
         # ログインユーザーのフォロワー取得
-        return FollowRelation.get_followers(user)
+        return user.get_followers()
 
 
 class MessageRoomView(LoginRequiredMixin, DetailView):
@@ -32,10 +32,9 @@ class MessageRoomView(LoginRequiredMixin, DetailView):
     context_object_name = "follower"
 
     def get(self, request, *args, **kwargs):
-        # パスパラメータを元に対象ユーザー取得
-        user = get_object_or_404(CustomUser, username=self.kwargs["username"])
+        response = super().get(request, *args, **kwargs)
         # メッセージ部屋のユーザーがフォロワーでない場合はアクセスさせないようにする
-        if not FollowRelation.is_following(follower=user, followee=request.user):
+        if not request.user.is_followed_by_user(self.object):
             messages.success(
                 self.request,
                 "フォロワーではないユーザーにメッセージは送信できません。",
@@ -45,7 +44,7 @@ class MessageRoomView(LoginRequiredMixin, DetailView):
             return redirect(
                 request.META.get("HTTP_REFERER", "direct_messages:message_list")
             )
-        return super().get(request, *args, **kwargs)
+        return response
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

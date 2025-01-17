@@ -31,9 +31,7 @@ class MyTweetListView(LoginRequiredMixin, DetailView, TweetListMixin):
             self.request.user
         )
         # ユーザーがフォロワーかどうか設定
-        context["is_following"] = FollowRelation.is_following(
-            current_user, self.request.user
-        )
+        context["is_following"] = self.request.user.is_followed_by_user(current_user)
         # 投稿したツイートを取得
         context["tweet_list"] = self.get_tweet_list(current_user.tweets)
         return context
@@ -58,9 +56,7 @@ class LikedTweetListView(LoginRequiredMixin, DetailView, TweetListMixin):
             self.request.user
         )
         # ユーザーがフォロワーかどうか設定
-        context["is_following"] = FollowRelation.is_following(
-            current_user, self.request.user
-        )
+        context["is_following"] = self.request.user.is_followed_by_user(current_user)
         # いいねしたツイートIDを取得するクエリセット作成
         liked_tweet_ids = current_user.likes.values_list("tweet_id", flat=True)
         # いいねしたツイートを取得
@@ -89,9 +85,7 @@ class RetweetedTweetListView(LoginRequiredMixin, DetailView, TweetListMixin):
             self.request.user
         )
         # ユーザーがフォロワーかどうか設定
-        context["is_following"] = FollowRelation.is_following(
-            current_user, self.request.user
-        )
+        context["is_following"] = self.request.user.is_followed_by_user(current_user)
         # リツイートしたツイートIDを取得するクエリセット作成
         retweeted_tweet_ids = current_user.retweets.values_list("tweet_id", flat=True)
         # リツイートしたツイートを取得
@@ -120,9 +114,7 @@ class CommentedTweetListView(LoginRequiredMixin, DetailView, TweetListMixin):
             self.request.user
         )
         # ユーザーがフォロワーかどうか設定
-        context["is_following"] = FollowRelation.is_following(
-            current_user, self.request.user
-        )
+        context["is_following"] = self.request.user.is_followed_by_user(current_user)
         # コメントしたツイートIDを取得するクエリセット作成
         commented_tweet_ids = current_user.comments.values_list("tweet_id", flat=True)
         # コメントしたツイートを取得
