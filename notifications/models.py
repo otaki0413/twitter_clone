@@ -22,6 +22,9 @@ class NotificationType(AbstractCommon):
     name = models.CharField("通知種別名", max_length=30, null=False, blank=False)
     description = models.CharField("説明", max_length=100, null=True, blank=False)
 
+    def __str__(self):
+        return f"{self.id}：{self.name}"
+
 
 class Notification(AbstractCommon):
     """通知情報の格納用モデル"""
@@ -49,3 +52,6 @@ class Notification(AbstractCommon):
     )
     tweet = models.ForeignKey(Tweet, on_delete=models.CASCADE)
     is_read = models.BooleanField("既読フラグ", default=False)
+
+    def __str__(self):
+        return f"{self.notification_type}：{self.sender} -> {self.receiver}"
