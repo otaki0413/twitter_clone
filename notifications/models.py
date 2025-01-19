@@ -55,3 +55,14 @@ class Notification(AbstractCommon):
 
     def __str__(self):
         return f"{self.notification_type}：{self.sender} -> {self.receiver}"
+
+    @classmethod
+    def create_notification(cls, notification_type_name, sender, receiver, tweet):
+        """通知情報を作成する処理"""
+        notification_type = NotificationType.objects.get(name=notification_type_name)
+        return cls.objects.create(
+            notification_type=notification_type,
+            sender=sender,
+            receiver=receiver,
+            tweet=tweet,
+        )
