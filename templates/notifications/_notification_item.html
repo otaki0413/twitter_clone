@@ -1,0 +1,85 @@
+<div class="px-3 py-2 border-bottom border-secondary position-relative">
+  <!-- 対象ツイートへのリンク -->
+  <a href="{% url "tweets:tweet_detail" item.tweet.pk %}" class="stretched-link"></a>
+
+  <!-- 通知種別がいいねの場合 -->
+  {% if item.notification_type.name == "like" %}
+    <div class="d-flex">
+      <div class="me-3">
+        <i class="bi bi-heart-fill text-danger" style="font-size: 28px"></i>
+      </div>
+      <div class="flex-grow-1">
+        <div class="d-flex flex-column gap-1">
+          <img
+            src={{ item.sender.icon_image_url }}
+            alt="ユーザーイメージ"
+            width="32"
+            height="32"
+            class="rounded-circle me-2"
+          />
+          <div>{{ item.sender.display_name }}さんがあなたのツイートをいいねしました</div>
+          <p class="m-0 text-secondary">{{ item.tweet.content }}</p>
+        </div>
+      </div>
+    </div>
+
+  <!-- 通知種別がリツイートの場合 -->
+  {% elif item.notification_type.name == "retweet" %}
+    <div class="d-flex">
+      <div class="me-3">
+        <i class="bi bi-repeat text-success" style="font-size: 28px"></i>
+      </div>
+      <div class="flex-grow-1">
+        <div class="d-flex flex-column gap-1">
+          <img
+            src={{ item.sender.icon_image_url }}
+            alt="ユーザーイメージ"
+            width="32"
+            height="32"
+            class="rounded-circle me-2"
+          />
+          <div>{{ item.sender.display_name }}さんがあなたのツイートをリツイートしました</div>
+          <p class="m-0 text-secondary">{{ item.tweet.content }}</p>
+        </div>
+      </div>
+    </div>
+
+  <!-- 通知種別がコメントの場合 -->
+  {% elif item.notification_type.name == "comment" %}
+    <div class="d-flex">
+      <a href={% url "profiles:my_tweet_list" item.sender.username %} class="position-relative z-2">
+        <img
+          src={{ item.sender.icon_image_url }}
+          alt="ユーザーイメージ"
+          width="40"
+          height="40"
+          class="rounded-circle me-2"
+        />
+      </a>
+      <div class="flex-grow-1">
+        <!-- ユーザー情報とテキスト -->
+        <div class="d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center gap-1 flex-grow-1 overflow-hidden">
+            <div class="fw-bold text-truncate" style="max-width: 200px">{{ item.sender.display_name }}</div>
+            <small class="text-secondary text-truncate" style="max-width: 100px">
+              @{{ item.sender.username }}
+            </small>
+            <small class="text-secondary">
+              ・{{ item.tweet.created_at|date:"Y年n月j日" }}
+            </small>
+          </div>
+        </div>
+        <!-- 返信先 -->
+        <div class="text-secondary">
+          返信先:
+          <a href={% url "profiles:my_tweet_list" user.username %} class="text-decoration-none position-relative z-2">
+            @{{ user.username }}
+          </a>さん
+        </div>
+        <!-- ツイート内容 -->
+        <p class="m-0">{{ item.tweet.content }}</p>
+      </div>
+    </div>
+  {% endif %}
+
+</div>

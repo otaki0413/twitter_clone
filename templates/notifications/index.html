@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% load static %}
 
 {% block title %}通知一覧ページ{% endblock title %}
 
@@ -20,94 +19,15 @@
 
 <!-- 通知一覧 -->
 <div>
-  <div class="p-3 border-bottom border-secondary">
-    <div class="d-flex">
-      <div class="me-3">
-        <i class="bi bi-heart-fill text-danger" style="font-size: 28px"></i>
-      </div>
-      <div class="flex-grow-1">
-        <div class="d-flex flex-column gap-2">
-          <img
-            src={% static "default_icon.png" %}
-            alt="ユーザーイメージ"
-            width="32"
-            height="32"
-            class="rounded-circle me-2"
-          />
-          <div>〇〇さんがあなたのツイートをいいねしました</div>
-          <p class="m-0 text-secondary">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Obcaecati minima officiis, distinctio commodi quam placeat cum voluptates totam quas magni, asperiores velit? Accusantium veritatis voluptate cumque fugit cum quis officia.</p>
-        </div>
-      </div>
+  {% if notification_list %}
+    {% for item in notification_list %}
+      {% include "notifications/_notification_item.html" %}
+    {% endfor %}
+  {% else %}
+    <div class="mt-5">
+      <p class="text-center">通知は届いていません</p>
     </div>
-  </div>
-
-  <div class="p-3 border-bottom border-secondary">
-    <div class="d-flex">
-      <div class="me-3">
-        <i class="bi bi-repeat text-success" style="font-size: 28px"></i>
-      </div>
-      <div class="flex-grow-1">
-        <div class="d-flex flex-column gap-2">
-          <img
-            src={% static "default_icon.png" %}
-            alt="ユーザーイメージ"
-            width="32"
-            height="32"
-            class="rounded-circle me-2"
-          />
-          <div>〇〇さんがあなたのツイートをリツイートしました</div>
-          <p class="m-0 text-secondary">Lorem ipsum dolor sit amet consectetur, adipisicing elit. Obcaecati minima officiis, distinctio commodi quam placeat cum voluptates totam quas magni, asperiores velit? Accusantium veritatis voluptate cumque fugit cum quis officia.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-
-  <div class="p-3 border-bottom border-secondary">
-    <div class="d-flex">
-      <div>
-        <img
-          src={% static "default_icon.png" %}
-          alt="ユーザーイメージ"
-          width="40"
-          height="40"
-          class="rounded-circle me-2"
-        />
-      </div>
-      <div class="flex-grow-1">
-        <div class="d-flex align-items-center justify-content-between">
-          <!-- 左側（ユーザー情報とテキスト） -->
-          <div class="d-flex align-items-center gap-1 flex-grow-1 overflow-hidden">
-            <div class="fw-bold text-truncate" style="max-width: 200px">おたきああああああああああああああああああああああ</div>
-            <small class="text-secondary text-truncate" style="max-width: 80px">
-              @otakiっっっっっっっっっっっっっっっっｈ
-            </small>
-            <small class="text-secondary">・2024年12月31日</small>
-          </div>
-          <!-- ボタン -->
-          <div class="btn-group z-3">
-            <button class="btn text-white" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-              <i class="bi bi-three-dots"></i>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-dark">
-              <!-- ドロップダウンメニューの内容 -->
-              <li><a class="dropdown-item" href="#">アクション1</a></li>
-              <li><a class="dropdown-item" href="#">アクション2</a></li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- ツイート内容 -->
-        <div>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Id error voluptates aliquam deleniti rem, amet doloremque soluta repellendus delectus asperiores fuga qui praesentium ipsum at nostrum quo quis vitae neque.</div>
-
-        <!-- アイコンエリア -->
-        <div class="p-2 pb-0">
-          {% include "tweets/_tweet_action_icons.html" %}
-        </div>
-      </div>
-    </div>
-  </div>
-
+  {% endif %}
 </div>
 
 {% endblock content %}
