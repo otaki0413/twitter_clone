@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}メッセージ一覧ページ{% endblock title %}
+
+{% block content %}
+<div class="px-3 border-bottom border-secondary">
+  <!-- ヘッダーエリア -->
+  <div class="d-flex align-items-center" style="height: 54px">
+    <div style="min-width: 56px">
+      <a href="{{ request.META.HTTP_REFERER }}" class="text-white">
+        <i class="bi bi-arrow-left"></i>
+      </a>
+    </div>
+    <div>
+      <div class="fs-5 fw-bold">メッセージ</div>
+    </div>
+  </div>
+</div>
+
+<!-- メッセージ一覧 -->
+<div>
+  {% if followers %}
+    {% for relation in followers %}
+      {% include "direct_messages/_message_room_link.html" %}
+    {% endfor %}
+  {% else %}
+    <div class="mt-5">
+      <p class="text-center">メッセージを送れるユーザーは存在しません</p>
+    </div>
+  {% endif %}
+</div>
+
+{% endblock content %}

@@ -44,6 +44,15 @@
                   {% endif %}
                 </form>
               <li>
+
+              {% if tweet.user.is_following  %}
+                <!-- ツイート投稿者が自身のフォロワーの場合 -->
+                <li>
+                  <a href="{% url "direct_messages:message_room" tweet.user.username %}" class="dropdown-item btn">
+                    {{ tweet.user.username }}さんにメッセージ
+                  </a>
+                <li>
+              {% endif %}
             {% endif %}
           </ul>
         </div>

@@ -1,0 +1,23 @@
+{% if message.sender == follower %}
+  <div class="mb-3">
+    <div class="d-flex justify-content-start">
+      <div class="px-3 py-2 border rounded-5 border-dark bg-secondary text-white" style="max-width: 60%;">
+        {{ message.content }}
+      </div>
+    </div>
+    <div class="p-1 text-start">
+      <small class="text-secondary">{{ message.created_at|date:"Y年n月j日 A f" }}</small>
+    </div>
+  </div>
+{% elif message.sender == user %}
+  <div class="mb-3">
+    <div class="d-flex justify-content-end">
+      <div class="px-3 py-2 border rounded-5 border-dark bg-primary text-white" style="max-width: 60%;">
+        {{ message.content }}
+      </div>
+    </div>
+    <div class="p-1 text-end">
+      <small class="text-secondary">{{ message.created_at|date:"Y年n月j日 A f" }}</small>
+    </div>
+  </div>
+{% endif %}

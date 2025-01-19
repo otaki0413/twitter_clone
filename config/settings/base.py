@@ -18,6 +18,7 @@ INSTALLED_APPS = [
     "accounts.apps.AccountsConfig",
     "tweets.apps.TweetsConfig",
     "profiles.apps.ProfilesConfig",
+    "direct_messages.apps.DirectMessagesConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

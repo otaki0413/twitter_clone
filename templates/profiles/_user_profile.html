@@ -60,16 +60,28 @@
     {% else %}
       <!-- 他ユーザーのプロフィールの場合 -->
       <div class="ms-auto">
-        <form method="POST" action="{% url 'accounts:follow_toggle' %}">
-          {% csrf_token %}
-          <input type="hidden" name="user_id" value="{{ user_profile.id }}" />
-          <!-- フォロー・未フォローに応じて表示を変える -->
-          {% if is_followed_by_user  %}
-            <button class="btn btn-dark text-danger border border-danger rounded-pill fw-bold px-3">フォロー解除</button>
-          {% else %}
-            <button class="btn btn-dark border border-secondary rounded-pill fw-bold px-3">フォローする</button>
+        <div class="d-flex align-items-center gap-2">
+
+          {% if is_following  %}
+            <!-- ツイート投稿者が自身のフォロワーの場合、アイコン表示 -->
+            <div class="border border-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+              <a href="{% url "direct_messages:message_room" user_profile.username %}" class="text-white">
+                <i class="bi bi-envelope"></i>
+              </a>
+            </div>
           {% endif %}
-        </form>
+
+          <form method="POST" action="{% url 'accounts:follow_toggle' %}">
+            {% csrf_token %}
+            <input type="hidden" name="user_id" value="{{ user_profile.id }}" />
+            <!-- フォロー・未フォローに応じて表示を変える -->
+            {% if is_followed_by_user %}
+              <button class="btn btn-dark text-danger border border-danger rounded-pill fw-bold px-3">フォロー解除</button>
+            {% else %}
+              <button class="btn btn-dark border border-secondary rounded-pill fw-bold px-3">フォローする</button>
+            {% endif %}
+          </form>
+        </div>
       </div>
     {% endif %}
   </div>

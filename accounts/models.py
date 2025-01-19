@@ -64,12 +64,20 @@ class CustomUser(AbstractUser, AbstractCommon):
         return self.username
 
     def is_followed_by_user(self, user):
-        """ログインユーザーがフォローしているかどうか"""
+        """指定したユーザーがフォロワーかどうか確認する"""
         try:
             self.follower_relations.get(follower=user)
             return True
         except FollowRelation.DoesNotExist:
             return False
+
+    def get_followings(self):
+        """自身がフォローしている人を取得する"""
+        return self.following_relations.select_related("followee")
+
+    def get_followers(self):
+        """自身のフォロワーを取得する"""
+        return self.follower_relations.select_related("follower")
 
     def post_login(self):
         """ログイン後処理"""
