@@ -6,6 +6,8 @@ from django.contrib import messages
 from django.db.models import QuerySet
 from django.core.paginator import Paginator
 from django.db import transaction, IntegrityError
+from django.core.mail import send_mail
+from django.conf import settings
 
 from config.utils import get_resized_image_url
 
@@ -280,10 +282,14 @@ class CommentCreateView(CreateView):
                 f"予期しないエラーが発生しました: {str(e)}",
                 extra_tags="danger",
             )
-
         else:
-            # TODO: ここでメール通知行う
-            pass
+            # メール通知
+            send_mail(
+                subject="リツイートされました！🎉",
+                message=f"{self.request.user.username}さんがあなたのツイートにコメントしました。",
+                from_email=settings.FROM_EMAIL,
+                recipient_list=[comment.tweet.user.email],
+            )
 
         finally:
             return super().form_valid(form)
@@ -377,9 +383,14 @@ class LikeToggleView(LoginRequiredMixin, View):
                 extra_tags="danger",
             )
         else:
-            # TODO: ここでメール通知行う
+            # メール通知
             if send_email:
-                pass
+                send_mail(
+                    subject="いいねされました！🎉",
+                    message=f"{user.username}さんがあなたのツイートをいいねしました。",
+                    from_email=settings.FROM_EMAIL,
+                    recipient_list=[tweet.user.email],
+                )
         finally:
             # 直前のページにリダイレクトする
             return redirect(request.META.get("HTTP_REFERER", "tweets:timeline"))
@@ -449,9 +460,14 @@ class RetweetToggleView(LoginRequiredMixin, View):
                 extra_tags="danger",
             )
         else:
-            # TODO: ここでメール通知行う
+            # メール通知
             if send_email:
-                pass
+                send_mail(
+                    subject="リツイートされました！🎉",
+                    message=f"{user.username}さんがあなたのツイートをリツイートしました。",
+                    from_email=settings.FROM_EMAIL,
+                    recipient_list=[tweet.user.email],
+                )
         finally:
             # 直前のページにリダイレクトする
             return redirect(request.META.get("HTTP_REFERER", "tweets:timeline"))
