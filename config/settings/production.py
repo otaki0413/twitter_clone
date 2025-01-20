@@ -27,3 +27,10 @@ DATABASES = {
         ssl_require=True,
     )
 }
+
+# --------------------
+# Email settings
+# --------------------
+FROM_EMAIL = env("FROM_EMAIL")
+EMAIL_BACKEND = "anymail.backends.sendgrid.EmailBackend"
+ANYMAIL = {"SENDGRID_API_KEY": env("SENDGRID_API_KEY")}
