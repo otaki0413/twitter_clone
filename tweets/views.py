@@ -254,13 +254,16 @@ class CommentCreateView(CreateView):
                 comment.tweet = Tweet.objects.get(pk=self.kwargs["pk"])
                 # コメント保存
                 comment.save()
-                # 通知作成
-                Notification.create_notification(
-                    notification_type_name="comment",
-                    sender=self.request.user,
-                    receiver=comment.tweet.user,
-                    tweet=comment.tweet,
-                )
+                # 自身以外に対して通知作成
+                send_email = False
+                if not comment.user == comment.tweet.user:
+                    send_email = True
+                    Notification.create_notification(
+                        notification_type_name="comment",
+                        sender=comment.user,
+                        receiver=comment.tweet.user,
+                        tweet=comment.tweet,
+                    )
                 messages.success(
                     self.request,
                     "コメントの投稿に成功しました。",
@@ -283,13 +286,14 @@ class CommentCreateView(CreateView):
                 extra_tags="danger",
             )
         else:
-            # メール通知
-            send_mail(
-                subject="リツイートされました！🎉",
-                message=f"{self.request.user.username}さんがあなたのツイートにコメントしました。",
-                from_email=settings.FROM_EMAIL,
-                recipient_list=[comment.tweet.user.email],
-            )
+            # 通知フラグがONの場合、メール通知
+            if send_email:
+                send_mail(
+                    subject="コメントされました！🎉",
+                    message=f"{self.request.user.username}さんがあなたのツイートにコメントしました。",
+                    from_email=settings.FROM_EMAIL,
+                    recipient_list=[comment.tweet.user.email],
+                )
 
         finally:
             return super().form_valid(form)
@@ -341,20 +345,21 @@ class LikeToggleView(LoginRequiredMixin, View):
                 if target_like is None:
                     # いいね追加
                     tweet.likes.create(user=user)
-                    # 通知作成
-                    Notification.create_notification(
-                        notification_type_name="like",
-                        sender=user,
-                        receiver=tweet.user,
-                        tweet=tweet,
-                    )
+                    # 自身以外に対して通知作成
+                    send_email = False
+                    if not user == tweet.user:
+                        send_email = True
+                        Notification.create_notification(
+                            notification_type_name="like",
+                            sender=user,
+                            receiver=tweet.user,
+                            tweet=tweet,
+                        )
                     messages.success(
                         self.request,
                         "いいねをしました。",
                         extra_tags="success",
                     )
-                    # メール通知する設定
-                    send_email = True
                 else:
                     # いいね削除
                     target_like.delete()
@@ -363,9 +368,6 @@ class LikeToggleView(LoginRequiredMixin, View):
                         "いいねを解除しました。",
                         extra_tags="success",
                     )
-                    # メール通知しない設定
-                    send_email = False
-
         except Tweet.DoesNotExist:
             messages.error(
                 self.request, "ツイートが存在しませんでした。", extra_tags="danger"
@@ -383,7 +385,7 @@ class LikeToggleView(LoginRequiredMixin, View):
                 extra_tags="danger",
             )
         else:
-            # メール通知
+            # 通知フラグがONの場合、メール通知
             if send_email:
                 send_mail(
                     subject="いいねされました！🎉",
@@ -418,20 +420,21 @@ class RetweetToggleView(LoginRequiredMixin, View):
                 if target_retweet is None:
                     # リツイート
                     tweet.retweets.create(user=user)
-                    # 通知作成
-                    Notification.create_notification(
-                        notification_type_name="retweet",
-                        sender=user,
-                        receiver=tweet.user,
-                        tweet=tweet,
-                    )
+                    # 自身以外に対して通知作成
+                    send_email = False
+                    if not user == tweet.user:
+                        send_email = True
+                        Notification.create_notification(
+                            notification_type_name="retweet",
+                            sender=user,
+                            receiver=tweet.user,
+                            tweet=tweet,
+                        )
                     messages.success(
                         self.request,
                         "リツイートしました。",
                         extra_tags="success",
                     )
-                    # メール通知する設定
-                    send_email = True
                 else:
                     # リツイート解除
                     target_retweet.delete()
@@ -440,9 +443,6 @@ class RetweetToggleView(LoginRequiredMixin, View):
                         "リツイートを解除しました。",
                         extra_tags="success",
                     )
-                    # メール通知しない設定
-                    send_email = False
-
         except Tweet.DoesNotExist:
             messages.error(
                 self.request, "ツイートが存在しませんでした。", extra_tags="danger"
@@ -460,7 +460,7 @@ class RetweetToggleView(LoginRequiredMixin, View):
                 extra_tags="danger",
             )
         else:
-            # メール通知
+            # 通知フラグがONの場合、メール通知
             if send_email:
                 send_mail(
                     subject="リツイートされました！🎉",
