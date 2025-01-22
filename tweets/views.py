@@ -111,16 +111,8 @@ class BookmarkListView(LoginRequiredMixin, ListView):
     login_url = reverse_lazy("accounts:login")
 
     def get_queryset(self):
-        # ログインユーザ取得
         user = self.request.user
-        # ブックマークしているツイートIDを取得するクエリセット作成
-        inner_qs = Bookmark.objects.filter(user=user).values_list("tweet_id", flat=True)
-        return (
-            Tweet.objects.filter(id__in=inner_qs)
-            .select_related("user")
-            .prefetch_related("likes", "retweets", "bookmarks")
-            .order_by("-created_at")
-        )
+        return Tweet.get_bookmarked_tweets(user=user)
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)

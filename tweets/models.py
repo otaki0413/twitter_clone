@@ -47,6 +47,17 @@ class Tweet(AbstractCommon):
             .order_by("-created_at")
         )
 
+    @classmethod
+    def get_bookmarked_tweets(cls, user):
+        """ブックマークしたツイート一覧を取得する"""
+        inner_qs = user.bookmarks.values_list("tweet", flat=True)
+        return (
+            cls.objects.filter(id__in=inner_qs)
+            .select_related("user")
+            .prefetch_related("likes", "retweets", "bookmarks")
+            .order_by("-created_at")
+        )
+
     def is_liked_by_user(self, user):
         """ログインユーザーがいいねしているかどうか"""
         try:
