@@ -12,7 +12,6 @@ from django.conf import settings
 from config.utils import get_resized_image_url
 
 from .models import Tweet, Comment, Like, Retweet, Bookmark
-from accounts.models import FollowRelation
 from notifications.models import Notification
 from .forms import TweetCreateForm, CommentCreateForm
 
@@ -76,10 +75,7 @@ class TimelineView(LoginRequiredMixin, ListView):
 
     model = Tweet
     template_name = "tweets/index.html"
-    queryset = Tweet.objects.select_related("user").prefetch_related(
-        "likes", "retweets", "bookmarks"
-    )
-    ordering = "-created_at"
+    queryset = Tweet.get_timeline_tweets()
     login_url = reverse_lazy("accounts:login")
 
     def get_context_data(self, *args, **kwargs):
@@ -87,12 +83,6 @@ class TimelineView(LoginRequiredMixin, ListView):
         queryset = self.get_queryset()
         context.update(create_tweet_context_with_form(self.request, queryset))
         return context
-
-    # def get(self, *args, **kwargs):
-    #     # セッションが存在しない場合、ログイン画面へリダイレクト
-    #     if self.request.session.session_key is None:
-    #         return redirect("accounts:login")
-    #     return super().get(*args, **kwargs)
 
 
 class FollowingTweetListView(LoginRequiredMixin, ListView):
@@ -103,19 +93,8 @@ class FollowingTweetListView(LoginRequiredMixin, ListView):
     login_url = reverse_lazy("accounts:login")
 
     def get_queryset(self):
-        # ログインユーザ取得
         user = self.request.user
-        # フォロー中のユーザIDを取得するクエリセット作成
-        inner_qs = FollowRelation.objects.filter(follower_id=user.id).values_list(
-            "followee_id", flat=True
-        )
-        # フォロー中のユーザのツイートを取得するクエリセットを返す
-        return (
-            Tweet.objects.filter(user_id__in=inner_qs)
-            .select_related("user")
-            .prefetch_related("likes", "retweets", "bookmarks")
-            .order_by("-created_at")
-        )
+        return Tweet.get_following_tweets(user=user)
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)

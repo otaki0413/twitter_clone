@@ -25,7 +25,27 @@ class Tweet(AbstractCommon):
     image = models.ImageField("ツイート画像", upload_to="tweets/", blank=True)
 
     def __str__(self):
-        return f"{self.user.username}のツイート"
+        return f"{self.user.username}のツイート: ${self.content[:20]}"
+
+    @classmethod
+    def get_timeline_tweets(cls):
+        """おすすめのツイート一覧を取得する"""
+        return (
+            cls.objects.select_related("user")
+            .prefetch_related("likes", "retweets", "bookmarks")
+            .order_by("-created_at")
+        )
+
+    @classmethod
+    def get_following_tweets(cls, user):
+        """フォロー中のツイート一覧を取得する"""
+        inner_qs = user.following_relations.values_list("followee", flat=True)
+        return (
+            cls.objects.filter(user_id__in=inner_qs)
+            .select_related("user")
+            .prefetch_related("likes", "retweets", "bookmarks")
+            .order_by("-created_at")
+        )
 
     def is_liked_by_user(self, user):
         """ログインユーザーがいいねしているかどうか"""
