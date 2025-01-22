@@ -79,6 +79,12 @@ class CustomUser(AbstractUser, AbstractCommon):
         """自身のフォロワーを取得する"""
         return self.follower_relations.select_related("follower")
 
+    def get_notifications(self):
+        """自身への通知情報を取得する"""
+        return self.received_notifications.select_related(
+            "notification_type", "sender", "tweet"
+        ).order_by("-created_at")
+
     def post_login(self):
         """ログイン後処理"""
         # ログイン回数を増やす

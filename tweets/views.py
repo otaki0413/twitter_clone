@@ -5,11 +5,15 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.db.models import QuerySet
 from django.core.paginator import Paginator
+from django.db import transaction, IntegrityError
+from django.core.mail import send_mail
+from django.conf import settings
 
 from config.utils import get_resized_image_url
 
 from .models import Tweet, Comment, Like, Retweet, Bookmark
 from accounts.models import FollowRelation
+from notifications.models import Notification
 from .forms import TweetCreateForm, CommentCreateForm
 
 
@@ -239,19 +243,60 @@ class CommentCreateView(CreateView):
         return reverse_lazy("tweets:tweet_detail", kwargs={"pk": self.kwargs["pk"]})
 
     def form_valid(self, form):
-        # フォームからインスタンス取得（※まだ保存しない）
-        comment = form.save(commit=False)
-        # ユーザーの設定
-        comment.user = self.request.user
-        # ツイートの設定
-        comment.tweet = Tweet.objects.get(pk=self.kwargs["pk"])
-        comment.save()
-        messages.success(
-            self.request,
-            "コメントの投稿に成功しました。",
-            extra_tags="success",
-        )
-        return super().form_valid(form)
+        try:
+            # トランザクション開始
+            with transaction.atomic():
+                # フォームからインスタンス取得（※まだ保存しない）
+                comment = form.save(commit=False)
+                # ユーザーの設定
+                comment.user = self.request.user
+                # ツイートの設定
+                comment.tweet = Tweet.objects.get(pk=self.kwargs["pk"])
+                # コメント保存
+                comment.save()
+                # 自身以外に対して通知作成
+                send_email = False
+                if not comment.user == comment.tweet.user:
+                    send_email = True
+                    Notification.create_notification(
+                        notification_type_name="comment",
+                        sender=comment.user,
+                        receiver=comment.tweet.user,
+                        tweet=comment.tweet,
+                    )
+                messages.success(
+                    self.request,
+                    "コメントの投稿に成功しました。",
+                    extra_tags="success",
+                )
+        except Tweet.DoesNotExist:
+            messages.error(
+                self.request, "ツイートが存在しませんでした。", extra_tags="danger"
+            )
+        except IntegrityError:
+            messages.error(
+                self.request,
+                "いいねの処理中にエラーが発生しました。",
+                extra_tags="danger",
+            )
+        except Exception as e:
+            messages.error(
+                self.request,
+                f"予期しないエラーが発生しました: {str(e)}",
+                extra_tags="danger",
+            )
+        else:
+            # 通知フラグがONの場合、メール通知
+            if send_email:
+                send_mail(
+                    subject="コメントされました！🎉",
+                    message=f"{self.request.user.username}さんがあなたのツイートにコメントしました。",
+                    from_email=settings.FROM_EMAIL,
+                    recipient_list=[comment.tweet.user.email],
+                )
+
+        finally:
+            return super().form_valid(form)
 
     def form_invalid(self, form):
         # ツイート詳細のクエリセット
@@ -283,74 +328,149 @@ class LikeToggleView(LoginRequiredMixin, View):
     """いいね・いいね解除を切り替えるビュー"""
 
     def post(self, request, *args, **kwargs):
-        # リクエストをもとにツイート情報を取得
-        tweet = Tweet.objects.get(pk=request.POST.get("tweet_id"))
-        # ログインユーザを取得
-        user = request.user
-
-        # 対象のいいね情報を取得
         try:
-            target_like = Like.objects.get(user=user, tweet=tweet)
-        except Like.DoesNotExist:
-            target_like = None
+            # リクエストをもとにツイート情報を取得
+            tweet = Tweet.objects.get(pk=request.POST.get("tweet_id"))
+            # ログインユーザを取得
+            user = request.user
 
-        # いいねの切り替え処理
-        if target_like is None:
-            # いいね追加
-            tweet.likes.create(user=user)
-            messages.success(
+            # 対象のいいね情報を取得
+            try:
+                target_like = Like.objects.get(user=user, tweet=tweet)
+            except Like.DoesNotExist:
+                target_like = None
+
+            with transaction.atomic():
+                # いいねの切り替え処理
+                if target_like is None:
+                    # いいね追加
+                    tweet.likes.create(user=user)
+                    # 自身以外に対して通知作成
+                    send_email = False
+                    if not user == tweet.user:
+                        send_email = True
+                        Notification.create_notification(
+                            notification_type_name="like",
+                            sender=user,
+                            receiver=tweet.user,
+                            tweet=tweet,
+                        )
+                    messages.success(
+                        self.request,
+                        "いいねをしました。",
+                        extra_tags="success",
+                    )
+                else:
+                    # いいね削除
+                    target_like.delete()
+                    messages.success(
+                        self.request,
+                        "いいねを解除しました。",
+                        extra_tags="success",
+                    )
+        except Tweet.DoesNotExist:
+            messages.error(
+                self.request, "ツイートが存在しませんでした。", extra_tags="danger"
+            )
+        except IntegrityError:
+            messages.error(
                 self.request,
-                "いいねをしました。",
-                extra_tags="success",
+                "いいねの処理中にエラーが発生しました。",
+                extra_tags="danger",
+            )
+        except Exception as e:
+            messages.error(
+                self.request,
+                f"予期しないエラーが発生しました: {str(e)}",
+                extra_tags="danger",
             )
         else:
-            # いいね削除
-            target_like.delete()
-            messages.success(
-                self.request,
-                "いいねを解除しました。",
-                extra_tags="success",
-            )
-
-        # 直前のページにリダイレクトする
-        return redirect(request.META.get("HTTP_REFERER", "tweets:timeline"))
+            # 通知フラグがONの場合、メール通知
+            if send_email:
+                send_mail(
+                    subject="いいねされました！🎉",
+                    message=f"{user.username}さんがあなたのツイートをいいねしました。",
+                    from_email=settings.FROM_EMAIL,
+                    recipient_list=[tweet.user.email],
+                )
+        finally:
+            # 直前のページにリダイレクトする
+            return redirect(request.META.get("HTTP_REFERER", "tweets:timeline"))
 
 
 class RetweetToggleView(LoginRequiredMixin, View):
     """リツイート・リツイート解除を切り替えるビュー"""
 
     def post(self, request, *args, **kwargs):
-        # リクエストをもとにツイート情報を取得
-        tweet = Tweet.objects.get(pk=request.POST.get("tweet_id"))
-        # ログインユーザを取得
-        user = request.user
-
-        # 対象のリツイート情報を取得
         try:
-            target_retweet = tweet.retweets.get(user=user)
-        except Retweet.DoesNotExist:
-            target_retweet = None
+            # リクエストをもとにツイート情報を取得
+            tweet = Tweet.objects.get(pk=request.POST.get("tweet_id"))
+            # ログインユーザを取得
+            user = request.user
 
-        # リツイートの切り替え処理
-        if target_retweet is None:
-            # リツイート
-            tweet.retweets.create(user=user)
-            messages.success(
+            # 対象のリツイート情報を取得
+            try:
+                target_retweet = tweet.retweets.get(user=user)
+            except Retweet.DoesNotExist:
+                target_retweet = None
+
+            # トランザクション開始
+            with transaction.atomic():
+                # リツイートの切り替え処理
+                if target_retweet is None:
+                    # リツイート
+                    tweet.retweets.create(user=user)
+                    # 自身以外に対して通知作成
+                    send_email = False
+                    if not user == tweet.user:
+                        send_email = True
+                        Notification.create_notification(
+                            notification_type_name="retweet",
+                            sender=user,
+                            receiver=tweet.user,
+                            tweet=tweet,
+                        )
+                    messages.success(
+                        self.request,
+                        "リツイートしました。",
+                        extra_tags="success",
+                    )
+                else:
+                    # リツイート解除
+                    target_retweet.delete()
+                    messages.success(
+                        self.request,
+                        "リツイートを解除しました。",
+                        extra_tags="success",
+                    )
+        except Tweet.DoesNotExist:
+            messages.error(
+                self.request, "ツイートが存在しませんでした。", extra_tags="danger"
+            )
+        except IntegrityError:
+            messages.error(
                 self.request,
-                "リツイートしました。",
-                extra_tags="success",
+                "リツイートの処理中にエラーが発生しました。",
+                extra_tags="danger",
+            )
+        except Exception as e:
+            messages.error(
+                self.request,
+                f"予期しないエラーが発生しました: {str(e)}",
+                extra_tags="danger",
             )
         else:
-            # リツイート解除
-            target_retweet.delete()
-            messages.success(
-                self.request,
-                "リツイートを解除しました。",
-                extra_tags="success",
-            )
-
-        # 直前のページにリダイレクトする
-        return redirect(request.META.get("HTTP_REFERER", "tweets:timeline"))
+            # 通知フラグがONの場合、メール通知
+            if send_email:
+                send_mail(
+                    subject="リツイートされました！🎉",
+                    message=f"{user.username}さんがあなたのツイートをリツイートしました。",
+                    from_email=settings.FROM_EMAIL,
+                    recipient_list=[tweet.user.email],
+                )
+        finally:
+            # 直前のページにリダイレクトする
+            return redirect(request.META.get("HTTP_REFERER", "tweets:timeline"))
 
 
 class BookmarkToggleView(LoginRequiredMixin, View):
