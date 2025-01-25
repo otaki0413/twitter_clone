@@ -1,57 +1,24 @@
-from django.db.models import QuerySet
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.shortcuts import redirect, resolve_url
 
-from config.utils import get_resized_image_url
-
 
 class TweetListMixin:
-    """ツイート一覧を取得し、画像リサイズやログインユーザーのいいね/リツイート/ブックマーク情報を付与する処理"""
+    """ツイート一覧表示用の共通処理をまとめるMixin"""
 
-    def get_tweet_list(
-        self, tweet_queryset: QuerySet, order_by: str = "-created_at"
-    ) -> QuerySet | None:
-        """対象のクエリセットに並び替えオプション追加、リサイズ済みの画像URLを付与する"""
-        if tweet_queryset:
-            tweet_queryset = tweet_queryset.order_by(order_by).prefetch_related(
-                "likes", "retweets", "bookmarks"
-            )
-            # ログインユーザがいいねしているツイートID取得
-            liked_tweet_ids = self.request.user.likes.values_list("tweet_id", flat=True)
-            # ログインユーザがリツイートしているツイートID取得
-            retweeted_tweet_ids = self.request.user.retweets.values_list(
-                "tweet_id", flat=True
-            )
-            # ログインユーザがブックマークしているツイートID取得
-            bookmarked_tweet_ids = self.request.user.bookmarks.values_list(
-                "tweet_id", flat=True
-            )
-            # ログインユーザーがフォローしているユーザーID取得
-            followed_user_ids = self.request.user.following_relations.values_list(
-                "followee_id", flat=True
-            )
-            # ログインユーザーのフォロワーID取得
-            follower_ids = self.request.user.follower_relations.values_list(
-                "follower_id", flat=True
-            )
+    def get_tweet_context(self, current_user):
+        """ツイート一覧表示に必要なコンテキストを取得する"""
+        return {
+            # ログインユーザーがフォローしているか設定
+            "is_followed_by_user": current_user.is_followed_by_user(self.request.user),
+            # ユーザーがフォロワーかどうか設定
+            "is_following": self.request.user.is_followed_by_user(current_user),
+            # ツイート一覧
+            "tweet_list": self.get_tweet_queryset(current_user),
+        }
 
-            for tweet in tweet_queryset:
-                if tweet.image:
-                    tweet.resized_image_url = get_resized_image_url(
-                        tweet.image.url, 150, 150
-                    )
-                # ログインユーザがいいねしているか設定
-                tweet.is_liked_by_user = tweet.id in liked_tweet_ids
-                # ログインユーザがリツイートしているか設定
-                tweet.is_retweeted_by_user = tweet.id in retweeted_tweet_ids
-                # ログインユーザーがブックマークしているか設定
-                tweet.is_bookmarked_by_user = tweet.id in bookmarked_tweet_ids
-                # ログインユーザーがフォローしているか設定
-                tweet.user.is_followed_by_user = tweet.user.id in followed_user_ids
-                # ツイート投稿者がフォロワーかどうか設定
-                tweet.user.is_following = tweet.user.id in follower_ids
-            return tweet_queryset
-        return None
+    def get_tweet_queryset(self, user):
+        """ツイート一覧を取得する（サブクラスでの実装必須）"""
+        raise NotImplementedError("Subclasses must implement get_tweet_queryset()")
 
 
 # TODO:プロフィールページに関するすべてのビューでこのmixinを継承したいが、なぜか処理が呼ばれないので一旦コメントアウト
