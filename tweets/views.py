@@ -16,14 +16,11 @@ from notifications.models import Notification
 from .forms import TweetCreateForm, CommentCreateForm
 
 
-def create_tweet_context_with_form(request, tweet_queryset: QuerySet = None):
+def create_tweet_context(request, tweet_queryset: QuerySet = None):
     """ページネーションや画像リサイズを適用したツイートリストとツイート投稿フォームを含むコンテキストを生成する処理"""
 
     # コンテキスト初期化
     context = {}
-
-    # ツイート投稿フォームのコンテキスト設定
-    context["form"] = TweetCreateForm
 
     if tweet_queryset:
         # ページネーター設定（とりあえず5件表示）
@@ -81,7 +78,8 @@ class TimelineView(LoginRequiredMixin, ListView):
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
         queryset = self.get_queryset()
-        context.update(create_tweet_context_with_form(self.request, queryset))
+        context["form"] = TweetCreateForm
+        context.update(create_tweet_context(self.request, queryset))
         return context
 
 
@@ -98,8 +96,9 @@ class FollowingTweetListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
+        context["form"] = TweetCreateForm
         queryset = self.get_queryset()
-        context.update(create_tweet_context_with_form(self.request, queryset))
+        context.update(create_tweet_context(self.request, queryset))
         return context
 
 
@@ -117,7 +116,7 @@ class BookmarkListView(LoginRequiredMixin, ListView):
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
         querySet = self.get_queryset()
-        context.update(create_tweet_context_with_form(self.request, querySet))
+        context.update(create_tweet_context(self.request, querySet))
         return context
 
 
@@ -149,49 +148,30 @@ class TweetCreateView(CreateView):
 
     def form_invalid(self, form):
         # ツイート一覧のクエリセット
-        tweet_queryset = (
-            Tweet.objects.select_related("user")
-            .order_by("-created_at")
-            .prefetch_related("likes", "retweets", "bookmarks")
-        )
+        queryset = Tweet.get_base_queryset()
         # バリデーションエラー時の再描画用のコンテキスト生成
-        context = create_tweet_context_with_form(self.request, tweet_queryset)
+        context = create_tweet_context(self.request, queryset)
         # フォームのエラー情報を設定
         context["form"] = form
         # タイムラインページ再描画
         return render(self.request, "tweets/index.html", context)
 
 
-class TweetDetailView(DetailView):
+class TweetDetailView(LoginRequiredMixin, DetailView):
     """ツイート詳細ビュー"""
 
     model = Tweet
     template_name = "tweets/detail.html"
-    queryset = (
-        Tweet.objects.select_related("user")
-        .prefetch_related("comments__user")
-        .prefetch_related("likes", "retweets", "bookmarks")
-    )
+
+    def get_queryset(self):
+        return Tweet.get_tweet_detail().filter(pk=self.kwargs["pk"])
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
         tweet = self.object
-        # 画像リサイズ適用
-        if tweet.image:
-            tweet.resized_image_url = get_resized_image_url(tweet.image.url, 300, 300)
-        # ログインユーザがいいねしているか設定
-        tweet.is_liked_by_user = tweet.is_liked_by_user(self.request.user)
-        # ログインユーザがリツイートしているか設定
-        tweet.is_retweeted_by_user = tweet.is_retweeted_by_user(self.request.user)
-        # ログインユーザがブックマークしているか設定
-        tweet.is_bookmarked_by_user = tweet.is_bookmarked_by_user(self.request.user)
-        # ログインユーザーがフォローしているか設定
-        tweet.user.is_followed_by_user = tweet.user.is_followed_by_user(
-            self.request.user
-        )
-        # 投稿者がフォロワーかどうか設定
-        tweet.user.is_following = self.request.user.is_followed_by_user(tweet.user)
-
+        relations = self.request.user.get_relations()
+        # ツイートにログインユーザー情報を付与
+        tweet.add_status(requesting_user=self.request.user, relations=relations)
         context["tweet"] = tweet
         context["form"] = CommentCreateForm()
         return context
@@ -270,22 +250,9 @@ class CommentCreateView(CreateView):
             return super().form_valid(form)
 
     def form_invalid(self, form):
-        # ツイート詳細のクエリセット
-        tweet = (
-            Tweet.objects.select_related("user")
-            .prefetch_related("comments__user", "likes", "retweets", "bookmarks")
-            .get(pk=self.kwargs["pk"])
-        )
-        # 画像リサイズ適用
-        if tweet.image:
-            tweet.resized_image_url = get_resized_image_url(tweet.image.url, 300, 300)
-        # ログインユーザがいいねしているか設定
-        tweet.is_liked_by_user = tweet.is_liked_by_user(self.request.user)
-        # ログインユーザがリツイートしているか設定
-        tweet.is_retweeted_by_user = tweet.is_retweeted_by_user(self.request.user)
-        # ログインユーザがブックマークしているか設定
-        tweet.is_bookmarked_by_user = tweet.is_bookmarked_by_user(self.request.user)
-
+        tweet = Tweet.get_tweet_detail().get(pk=self.kwargs["pk"])
+        relations = self.request.user.get_relations()
+        tweet.add_status(requesting_user=self.request.user, relations=relations)
         # バリデーションエラー時の再描画用のコンテキスト生成
         context = {
             "tweet": tweet,

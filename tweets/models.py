@@ -92,6 +92,11 @@ class Tweet(AbstractCommon):
         return cls.get_tweets_with_status(queryset, user)
 
     @classmethod
+    def get_tweet_detail(cls):
+        """単一のツイート情報を取得"""
+        return cls.get_base_queryset().prefetch_related("comments__user")
+
+    @classmethod
     def get_tweets_with_status(cls, queryset, requesting_user=None):
         """各ツイートにログインユーザーの情報を付与したものを取得する"""
         if requesting_user is None:
@@ -111,19 +116,22 @@ class Tweet(AbstractCommon):
         if requesting_user is None:
             return self
 
-        # ログインユーザがいいねしているか設定
-        self.is_liked_by_user = self.id in relations["liked_tweet_ids"]
-        # ログインユーザがリツイートしているか設定
-        self.is_retweeted_by_user = self.id in relations["retweeted_tweet_ids"]
-        # ログインユーザーがブックマークしているか設定
-        self.is_bookmarked_by_user = self.id in relations["bookmarked_tweet_ids"]
-        # ツイート投稿者がフォロワーかどうか設定
-        self.user.is_followed_by_user = self.user.id in relations["following_user_ids"]
-        # ツイート投稿者がフォロワーかどうか設定
-        self.user.is_following = self.user.id in relations["follower_user_ids"]
-        # ツイート画像のリサイズ
-        if self.image:
-            self.resized_image_url = get_resized_image_url(self.image.url, 150, 150)
+        if relations:
+            # ログインユーザがいいねしているか設定
+            self.is_liked_by_user = self.id in relations["liked_tweet_ids"]
+            # ログインユーザがリツイートしているか設定
+            self.is_retweeted_by_user = self.id in relations["retweeted_tweet_ids"]
+            # ログインユーザーがブックマークしているか設定
+            self.is_bookmarked_by_user = self.id in relations["bookmarked_tweet_ids"]
+            # ツイート投稿者がフォロワーかどうか設定
+            self.user.is_followed_by_user = (
+                self.user.id in relations["following_user_ids"]
+            )
+            # ツイート投稿者がフォロワーかどうか設定
+            self.user.is_following = self.user.id in relations["follower_user_ids"]
+            # ツイート画像のリサイズ
+            if self.image:
+                self.resized_image_url = get_resized_image_url(self.image.url, 150, 150)
         return self
 
     def is_liked_by_user(self, user):
