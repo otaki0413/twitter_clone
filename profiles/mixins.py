@@ -2,39 +2,29 @@ from django.contrib.auth.mixins import UserPassesTestMixin
 from django.shortcuts import redirect, resolve_url
 
 
+class FollowStatusMixin:
+    """フォロー関係をまとめるMixin"""
+
+    def get_follow_context(self, user):
+        """フォロー関係のコンテキストを取得する"""
+        return {
+            # ログインユーザーがフォローしているか設定
+            "is_followed_by_user": user.is_followed_by_user(self.request.user),
+            # ユーザーがフォロワーかどうか設定
+            "is_following": self.request.user.is_followed_by_user(user),
+        }
+
+
 class TweetListMixin:
     """ツイート一覧表示用の共通処理をまとめるMixin"""
 
-    def get_tweet_context(self, current_user):
+    def get_tweet_context(self, user):
         """ツイート一覧表示に必要なコンテキストを取得する"""
-        return {
-            # ログインユーザーがフォローしているか設定
-            "is_followed_by_user": current_user.is_followed_by_user(self.request.user),
-            # ユーザーがフォロワーかどうか設定
-            "is_following": self.request.user.is_followed_by_user(current_user),
-            # ツイート一覧
-            "tweet_list": self.get_tweet_queryset(current_user),
-        }
+        return {"tweet_list": self.get_tweet_queryset(user)}
 
     def get_tweet_queryset(self, user):
         """ツイート一覧を取得する（サブクラスでの実装必須）"""
         raise NotImplementedError("Subclasses must implement get_tweet_queryset()")
-
-
-# TODO:プロフィールページに関するすべてのビューでこのmixinを継承したいが、なぜか処理が呼ばれないので一旦コメントアウト
-# class FollowStatusMixin:
-#     """ログインユーザーがフォローしているかどうかを設定する処理"""
-
-#     def get_context_data(self, *args, **kwargs):
-#         """フォロー関係をチェックし、コンテキストに設定する処理"""
-#         context = super().get_context_data(*args, **kwargs)
-#         # ログインユーザーを取得
-#         current_user = self.object
-#         # ログインユーザーがフォローしているか設定
-#         context["is_followed_by_user"] = current_user.is_followed_by_user(
-#             self.request.user
-#         )
-#         return context
 
 
 class LoginUserIsUserMixin(UserPassesTestMixin):

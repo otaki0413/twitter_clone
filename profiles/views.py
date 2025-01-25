@@ -9,83 +9,77 @@ import cloudinary.uploader
 from accounts.models import CustomUser
 from tweets.models import Tweet
 from .forms import ProfileEditForm
-from .mixins import TweetListMixin, LoginUserIsUserMixin
+from .mixins import FollowStatusMixin, TweetListMixin, LoginUserIsUserMixin
 
 
-class MyTweetListView(LoginRequiredMixin, DetailView, TweetListMixin):
-    """自身のツイート一覧ビュー（プロフィール詳細ページのデフォルトビュー）"""
+class BaseProfileView(LoginRequiredMixin, DetailView):
+    """プロフィール関連ビューの基底クラス"""
 
     model = CustomUser
-    template_name = "profiles/my_tweets.html"
     context_object_name = "user_profile"
-    slug_field = "username"  # モデルのフィールド名
-    slug_url_kwarg = "username"  # urls.pyでのキーワード名
+    slug_field = "username"
+    slug_url_kwarg = "username"
     login_url = reverse_lazy("accounts:login")
+
+
+class MyTweetListView(BaseProfileView, FollowStatusMixin, TweetListMixin):
+    """自身のツイート一覧ビュー"""
+
+    template_name = "profiles/my_tweets.html"
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        tweet_context = self.get_tweet_context(current_user=self.object)
-        context.update(tweet_context)
+        follow_context = self.get_follow_context(user=self.object)
+        tweet_context = self.get_tweet_context(user=self.object)
+        context.update(**follow_context, **tweet_context)
         return context
 
     def get_tweet_queryset(self, user):
         return Tweet.get_my_tweets(user=user, requesting_user=self.request.user)
 
 
-class LikedTweetListView(LoginRequiredMixin, DetailView, TweetListMixin):
+class LikedTweetListView(BaseProfileView, FollowStatusMixin, TweetListMixin):
     """いいねしたツイート一覧ビュー"""
 
-    model = CustomUser
     template_name = "profiles/liked_tweets.html"
-    context_object_name = "user_profile"
-    slug_field = "username"
-    slug_url_kwarg = "username"
-    login_url = reverse_lazy("accounts:login")
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        tweet_context = self.get_tweet_context(current_user=self.object)
-        context.update(tweet_context)
+        follow_context = self.get_follow_context(user=self.object)
+        tweet_context = self.get_tweet_context(user=self.object)
+        context.update(**follow_context, **tweet_context)
         return context
 
     def get_tweet_queryset(self, user):
         return Tweet.get_liked_tweets(user=user, requesting_user=self.request.user)
 
 
-class RetweetedTweetListView(LoginRequiredMixin, DetailView, TweetListMixin):
+class RetweetedTweetListView(BaseProfileView, FollowStatusMixin, TweetListMixin):
     """リツイートしたツイート一覧ビュー"""
 
-    model = CustomUser
     template_name = "profiles/retweeted_tweets.html"
-    context_object_name = "user_profile"
-    slug_field = "username"
-    slug_url_kwarg = "username"
-    login_url = reverse_lazy("accounts:login")
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        tweet_context = self.get_tweet_context(current_user=self.object)
-        context.update(tweet_context)
+        follow_context = self.get_follow_context(user=self.object)
+        tweet_context = self.get_tweet_context(user=self.object)
+        context.update(**follow_context, **tweet_context)
         return context
 
     def get_tweet_queryset(self, user):
         return Tweet.get_retweeted_tweets(user=user, requesting_user=self.request.user)
 
 
-class CommentedTweetListView(LoginRequiredMixin, DetailView, TweetListMixin):
+class CommentedTweetListView(BaseProfileView, FollowStatusMixin, TweetListMixin):
     """コメントしたツイート一覧ビュー"""
 
-    model = CustomUser
     template_name = "profiles/commented_tweets.html"
-    context_object_name = "user_profile"
-    slug_field = "username"
-    slug_url_kwarg = "username"
-    login_url = reverse_lazy("accounts:login")
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        tweet_context = self.get_tweet_context(current_user=self.object)
-        context.update(tweet_context)
+        follow_context = self.get_follow_context(user=self.object)
+        tweet_context = self.get_tweet_context(user=self.object)
+        context.update(**follow_context, **tweet_context)
         return context
 
     def get_tweet_queryset(self, user):
