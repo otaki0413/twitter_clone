@@ -1,8 +1,8 @@
-<ul class="nav text-center">
+<ul class="nav nav-underline text-center">
   <li class="nav-item flex-fill">
-    <a class="nav-link text-white" href="{% url "tweets:timeline" %}">おすすめ</a>
+    <a class="nav-link text-white {% if request.resolver_match.url_name == 'timeline' %}active border-bottom border-info border-3{% endif %}" href="{% url "tweets:timeline" %}">おすすめ</a>
   </li>
   <li class="nav-item flex-fill">
-    <a class="nav-link text-white" href="{% url "tweets:following" %}">フォロー中</a>
+    <a class="nav-link text-white {% if request.resolver_match.url_name == 'following' %}active border-bottom border-info border-3{% endif %}" href="{% url "tweets:following" %}">フォロー中</a>
   </li>
 </ul>
