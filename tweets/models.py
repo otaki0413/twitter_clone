@@ -38,24 +38,19 @@ class Tweet(AbstractCommon):
         )
 
     @classmethod
-    def get_timeline_tweets(cls):
+    def get_timeline_tweets(cls, requesting_user):
         """おすすめのツイート一覧を取得する"""
-        return (
-            cls.objects.select_related("user")
-            .prefetch_related("likes", "retweets", "bookmarks")
-            .order_by("-created_at")
-        )
+        queryset = cls.get_base_queryset()
+        return cls.get_tweets_with_status(queryset, requesting_user)
 
     @classmethod
-    def get_following_tweets(cls, user):
+    def get_following_tweets(cls, requesting_user):
         """フォロー中のツイート一覧を取得する"""
-        inner_qs = user.following_relations.values_list("followee", flat=True)
-        return (
-            cls.objects.filter(user_id__in=inner_qs)
-            .select_related("user")
-            .prefetch_related("likes", "retweets", "bookmarks")
-            .order_by("-created_at")
+        following_user_ids = requesting_user.following_relations.values_list(
+            "followee", flat=True
         )
+        queryset = cls.get_base_queryset().filter(user_id__in=following_user_ids)
+        return cls.get_tweets_with_status(queryset, requesting_user)
 
     @classmethod
     def get_my_tweets(cls, user, requesting_user=None):
@@ -85,11 +80,11 @@ class Tweet(AbstractCommon):
         return cls.get_tweets_with_status(queryset, requesting_user)
 
     @classmethod
-    def get_bookmarked_tweets(cls, user):
+    def get_bookmarked_tweets(cls, requesting_user):
         """ブックマークしたツイート一覧を取得する"""
-        bookmarked_tweet_ids = user.bookmarks.values_list("tweet", flat=True)
+        bookmarked_tweet_ids = requesting_user.bookmarks.values_list("tweet", flat=True)
         queryset = cls.get_base_queryset().filter(id__in=bookmarked_tweet_ids)
-        return cls.get_tweets_with_status(queryset, user)
+        return cls.get_tweets_with_status(queryset, requesting_user)
 
     @classmethod
     def get_tweet_detail(cls):
@@ -99,10 +94,12 @@ class Tweet(AbstractCommon):
     @classmethod
     def get_tweets_with_status(cls, queryset, requesting_user=None):
         """各ツイートにログインユーザーの情報を付与したものを取得する"""
+
+        # ログインユーザーが指定されていない場合は、そのまま返す
         if requesting_user is None:
             return queryset
 
-        # ログインユーザーに関連する情報（いいね・リツイート・ブックマークなど）
+        # ログインユーザーに関連する情報取得（いいね・リツイート・ブックマークなど）
         relations = requesting_user.get_relations()
         if relations:
             for tweet in queryset:
@@ -113,6 +110,8 @@ class Tweet(AbstractCommon):
 
     def add_status(self, requesting_user, relations):
         """単一のツイートにログインユーザーの情報や画像リサイズを付与する"""
+
+        # ログインユーザーが指定されていない場合は、そのまま返す
         if requesting_user is None:
             return self
 
@@ -133,30 +132,6 @@ class Tweet(AbstractCommon):
             if self.image:
                 self.resized_image_url = get_resized_image_url(self.image.url, 150, 150)
         return self
-
-    def is_liked_by_user(self, user):
-        """ログインユーザーがいいねしているかどうか"""
-        try:
-            self.likes.get(user=user)
-            return True
-        except Like.DoesNotExist:
-            return False
-
-    def is_retweeted_by_user(self, user):
-        """ログインユーザーがリツイートしているかどうか"""
-        try:
-            self.retweets.get(user=user)
-            return True
-        except Retweet.DoesNotExist:
-            return False
-
-    def is_bookmarked_by_user(self, user):
-        """ログインユーザーがブックマークしているかどうか"""
-        try:
-            self.bookmarks.get(user=user)
-            return True
-        except Bookmark.DoesNotExist:
-            return False
 
 
 class Like(AbstractCommon):
