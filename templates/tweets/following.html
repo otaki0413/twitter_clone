@@ -10,11 +10,19 @@
   {% include "tweets/_tweetform.html" %}
 </div>
 <div>
-  {% for tweet in tweet_list  %}
-    {% include "tweets/_tweet.html" %}
-  {% endfor %}
-</div>
-<div class="mt-3">
-  {% include "tweets/_pagenation.html" %}
+  <!-- ツイート一覧 -->
+  {% if tweet_list %}
+    {% for tweet in tweet_list  %}
+      {% include "tweets/_tweet.html" %}
+    {% endfor %}
+    <!-- ページネーション -->
+    <div class="mt-3">
+      {% include "_pagenation.html" %}
+    </div>
+  {% else %}
+    <div class="mt-5">
+      <p class="text-center">ツイートは存在しません</p>
+    </div>
+  {% endif %}
 </div>
 {% endblock content %}

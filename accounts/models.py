@@ -91,6 +91,29 @@ class CustomUser(AbstractUser, AbstractCommon):
         self.login_count += 1
         self.save()
 
+    def get_relations(self):
+        """ユーザーに関連する情報を取得する"""
+        return {
+            # いいねしたツイートID
+            "liked_tweet_ids": set(self.likes.values_list("tweet_id", flat=True)),
+            # リツイートしたツイートID
+            "retweeted_tweet_ids": set(
+                self.retweets.values_list("tweet_id", flat=True)
+            ),
+            # ブックマークしたツイートID
+            "bookmarked_tweet_ids": set(
+                self.bookmarks.values_list("tweet_id", flat=True)
+            ),
+            # フォローしているユーザーID
+            "following_user_ids": set(
+                self.following_relations.values_list("followee_id", flat=True)
+            ),
+            # フォロワーのID
+            "follower_user_ids": set(
+                self.follower_relations.values_list("follower_id", flat=True)
+            ),
+        }
+
 
 class FollowRelation(AbstractCommon):
     """フォロー関係の格納用モデル"""

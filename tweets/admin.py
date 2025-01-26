@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Tweet, Like, Retweet, Comment
+from .models import Tweet, Like, Retweet, Comment, Bookmark
 
 
 @admin.register(Tweet)
@@ -24,4 +24,10 @@ class RetweetAdmin(admin.ModelAdmin):
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
     model = Comment
+    readonly_fields = ("created_at", "updated_at")
+
+
+@admin.register(Bookmark)
+class BookmarkAdmin(admin.ModelAdmin):
+    model = Bookmark
     readonly_fields = ("created_at", "updated_at")

@@ -3,124 +3,53 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.db.models import QuerySet
-from django.core.paginator import Paginator
 from django.db import transaction, IntegrityError
 from django.core.mail import send_mail
 from django.conf import settings
-
-from config.utils import get_resized_image_url
+from django.core.paginator import Paginator
 
 from .models import Tweet, Comment, Like, Retweet, Bookmark
-from accounts.models import FollowRelation
 from notifications.models import Notification
 from .forms import TweetCreateForm, CommentCreateForm
 
 
-def create_tweet_context_with_form(request, tweet_queryset: QuerySet = None):
-    """ページネーションや画像リサイズを適用したツイートリストとツイート投稿フォームを含むコンテキストを生成する処理"""
-
-    # コンテキスト初期化
-    context = {}
-
-    # ツイート投稿フォームのコンテキスト設定
-    context["form"] = TweetCreateForm
-
-    if tweet_queryset:
-        # ページネーター設定（とりあえず5件表示）
-        paginator = Paginator(tweet_queryset, 5)
-        page_number = request.GET.get("page")
-        page_obj = paginator.get_page(page_number)
-
-        # ログインユーザがいいねしているツイートID取得
-        liked_tweet_ids = request.user.likes.values_list("tweet_id", flat=True)
-        # ログインユーザがリツイートしているツイートID取得
-        retweeted_tweet_ids = request.user.retweets.values_list("tweet_id", flat=True)
-        # ログインユーザがブックマークしているツイートID取得
-        bookmarked_tweet_ids = request.user.bookmarks.values_list("tweet_id", flat=True)
-        # ログインユーザーがフォローしているユーザーID取得
-        followed_user_ids = request.user.following_relations.values_list(
-            "followee_id", flat=True
-        )
-        # ログインユーザーのフォロワーID取得
-        follower_ids = request.user.follower_relations.values_list(
-            "follower_id", flat=True
-        )
-
-        for tweet in page_obj.object_list:
-            # 画像リサイズ適用
-            if tweet.image:
-                tweet.resized_image_url = get_resized_image_url(
-                    tweet.image.url, 150, 150
-                )
-            # ログインユーザがいいねしているか設定
-            tweet.is_liked_by_user = tweet.id in liked_tweet_ids
-            # ログインユーザがリツイートしているか設定
-            tweet.is_retweeted_by_user = tweet.id in retweeted_tweet_ids
-            # ログインユーザがブックマークしているか設定
-            tweet.is_bookmarked_by_user = tweet.id in bookmarked_tweet_ids
-            # ログインユーザーがフォローしているか設定
-            tweet.user.is_followed_by_user = tweet.user.id in followed_user_ids
-            # ツイート投稿者がフォロワーかどうか設定
-            tweet.user.is_following = tweet.user.id in follower_ids
-
-        # ページネーション済みデータをコンテキスト設定
-        context["page_obj"] = page_obj
-        context["tweet_list"] = page_obj.object_list
-
-    return context
-
-
-class TimelineView(LoginRequiredMixin, ListView):
+class TimelineView(
+    LoginRequiredMixin,
+    ListView,
+):
     """おすすめのツイート一覧ビュー"""
 
     model = Tweet
     template_name = "tweets/index.html"
-    queryset = Tweet.objects.select_related("user").prefetch_related(
-        "likes", "retweets", "bookmarks"
-    )
-    ordering = "-created_at"
     login_url = reverse_lazy("accounts:login")
+    paginate_by = 5
+
+    def get_queryset(self):
+        return Tweet.get_timeline_tweets(requesting_user=self.request.user)
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        queryset = self.get_queryset()
-        context.update(create_tweet_context_with_form(self.request, queryset))
+        context["form"] = TweetCreateForm
         return context
 
-    # def get(self, *args, **kwargs):
-    #     # セッションが存在しない場合、ログイン画面へリダイレクト
-    #     if self.request.session.session_key is None:
-    #         return redirect("accounts:login")
-    #     return super().get(*args, **kwargs)
 
-
-class FollowingTweetListView(LoginRequiredMixin, ListView):
+class FollowingTweetListView(
+    LoginRequiredMixin,
+    ListView,
+):
     """フォロー中のツイート一覧ビュー"""
 
     model = Tweet
     template_name = "tweets/following.html"
     login_url = reverse_lazy("accounts:login")
+    paginate_by = 5
 
     def get_queryset(self):
-        # ログインユーザ取得
-        user = self.request.user
-        # フォロー中のユーザIDを取得するクエリセット作成
-        inner_qs = FollowRelation.objects.filter(follower_id=user.id).values_list(
-            "followee_id", flat=True
-        )
-        # フォロー中のユーザのツイートを取得するクエリセットを返す
-        return (
-            Tweet.objects.filter(user_id__in=inner_qs)
-            .select_related("user")
-            .prefetch_related("likes", "retweets", "bookmarks")
-            .order_by("-created_at")
-        )
+        return Tweet.get_following_tweets(requesting_user=self.request.user)
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        queryset = self.get_queryset()
-        context.update(create_tweet_context_with_form(self.request, queryset))
+        context["form"] = TweetCreateForm
         return context
 
 
@@ -130,24 +59,10 @@ class BookmarkListView(LoginRequiredMixin, ListView):
     model = Tweet
     template_name = "tweets/bookmark.html"
     login_url = reverse_lazy("accounts:login")
+    paginate_by = 5
 
     def get_queryset(self):
-        # ログインユーザ取得
-        user = self.request.user
-        # ブックマークしているツイートIDを取得するクエリセット作成
-        inner_qs = Bookmark.objects.filter(user=user).values_list("tweet_id", flat=True)
-        return (
-            Tweet.objects.filter(id__in=inner_qs)
-            .select_related("user")
-            .prefetch_related("likes", "retweets", "bookmarks")
-            .order_by("-created_at")
-        )
-
-    def get_context_data(self, *args, **kwargs):
-        context = super().get_context_data(*args, **kwargs)
-        querySet = self.get_queryset()
-        context.update(create_tweet_context_with_form(self.request, querySet))
-        return context
+        return Tweet.get_bookmarked_tweets(requesting_user=self.request.user)
 
 
 class TweetCreateView(CreateView):
@@ -155,12 +70,17 @@ class TweetCreateView(CreateView):
 
     model = Tweet
     form_class = TweetCreateForm
-    template_name = "tweets/_tweetform.html"
-    success_url = reverse_lazy("tweets:timeline")
 
     def get(self, request, *args, **kwargs):
-        # GETリクエスト時には一覧へリダイレクトさせる
-        return redirect("tweets:timeline")
+        # GETリクエスト時には直前のページへリダイレクト
+        return redirect(request.META.get("HTTP_REFERER", "tweets:timeline"))
+
+    def get_success_url(self):
+        # リファラーURLに応じて、リダイレクト先を切り替える
+        if "/following" in self.request.META.get("HTTP_REFERER", ""):
+            return reverse_lazy("tweets:following")
+        else:
+            return reverse_lazy("tweets:timeline")
 
     def form_valid(self, form):
         # フォームからインスタンス取得（※まだ保存しない）
@@ -177,50 +97,47 @@ class TweetCreateView(CreateView):
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        # ツイート一覧のクエリセット
-        tweet_queryset = (
-            Tweet.objects.select_related("user")
-            .order_by("-created_at")
-            .prefetch_related("likes", "retweets", "bookmarks")
-        )
+        # リファラーURLに応じた設定
+        if "/following" in self.request.META.get("HTTP_REFERER", ""):
+            queryset = Tweet.get_following_tweets(requesting_user=self.request.user)
+            template_name = "tweets/following.html"
+        else:
+            queryset = Tweet.get_timeline_tweets(requesting_user=self.request.user)
+            template_name = "tweets/index.html"
+
+        # ページネーター作成
+        paginator = Paginator(queryset, 5)
+        page_number = self.request.GET.get("page")
+        page_obj = paginator.get_page(page_number)
+
         # バリデーションエラー時の再描画用のコンテキスト生成
-        context = create_tweet_context_with_form(self.request, tweet_queryset)
-        # フォームのエラー情報を設定
-        context["form"] = form
-        # タイムラインページ再描画
-        return render(self.request, "tweets/index.html", context)
+        context = {
+            "form": form,
+            "tweet_list": page_obj,
+            "page_obj": page_obj,
+            "paginator": paginator,
+            "is_paginated": True,
+        }
+
+        # ページ再描画
+        return render(self.request, template_name, context)
 
 
-class TweetDetailView(DetailView):
+class TweetDetailView(LoginRequiredMixin, DetailView):
     """ツイート詳細ビュー"""
 
     model = Tweet
     template_name = "tweets/detail.html"
-    queryset = (
-        Tweet.objects.select_related("user")
-        .prefetch_related("comments__user")
-        .prefetch_related("likes", "retweets", "bookmarks")
-    )
+
+    def get_queryset(self):
+        return Tweet.get_tweet_detail().filter(pk=self.kwargs["pk"])
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
         tweet = self.object
-        # 画像リサイズ適用
-        if tweet.image:
-            tweet.resized_image_url = get_resized_image_url(tweet.image.url, 300, 300)
-        # ログインユーザがいいねしているか設定
-        tweet.is_liked_by_user = tweet.is_liked_by_user(self.request.user)
-        # ログインユーザがリツイートしているか設定
-        tweet.is_retweeted_by_user = tweet.is_retweeted_by_user(self.request.user)
-        # ログインユーザがブックマークしているか設定
-        tweet.is_bookmarked_by_user = tweet.is_bookmarked_by_user(self.request.user)
-        # ログインユーザーがフォローしているか設定
-        tweet.user.is_followed_by_user = tweet.user.is_followed_by_user(
-            self.request.user
-        )
-        # 投稿者がフォロワーかどうか設定
-        tweet.user.is_following = self.request.user.is_followed_by_user(tweet.user)
-
+        relations = self.request.user.get_relations()
+        # ツイートにログインユーザー情報を付与
+        tweet.add_status(requesting_user=self.request.user, relations=relations)
         context["tweet"] = tweet
         context["form"] = CommentCreateForm()
         return context
@@ -299,22 +216,9 @@ class CommentCreateView(CreateView):
             return super().form_valid(form)
 
     def form_invalid(self, form):
-        # ツイート詳細のクエリセット
-        tweet = (
-            Tweet.objects.select_related("user")
-            .prefetch_related("comments__user", "likes", "retweets", "bookmarks")
-            .get(pk=self.kwargs["pk"])
-        )
-        # 画像リサイズ適用
-        if tweet.image:
-            tweet.resized_image_url = get_resized_image_url(tweet.image.url, 300, 300)
-        # ログインユーザがいいねしているか設定
-        tweet.is_liked_by_user = tweet.is_liked_by_user(self.request.user)
-        # ログインユーザがリツイートしているか設定
-        tweet.is_retweeted_by_user = tweet.is_retweeted_by_user(self.request.user)
-        # ログインユーザがブックマークしているか設定
-        tweet.is_bookmarked_by_user = tweet.is_bookmarked_by_user(self.request.user)
-
+        tweet = Tweet.get_tweet_detail().get(pk=self.kwargs["pk"])
+        relations = self.request.user.get_relations()
+        tweet.add_status(requesting_user=self.request.user, relations=relations)
         # バリデーションエラー時の再描画用のコンテキスト生成
         context = {
             "tweet": tweet,

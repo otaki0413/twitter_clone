@@ -6,122 +6,84 @@ from django.contrib import messages
 
 import cloudinary.uploader
 
-from accounts.models import CustomUser, FollowRelation
+from accounts.models import CustomUser
 from tweets.models import Tweet
 from .forms import ProfileEditForm
-from .mixins import TweetListMixin, LoginUserIsUserMixin
+from .mixins import FollowStatusMixin, TweetListMixin, LoginUserIsUserMixin
 
 
-class MyTweetListView(LoginRequiredMixin, DetailView, TweetListMixin):
-    """自身のツイート一覧ビュー（プロフィール詳細ページのデフォルトビュー）"""
+class BaseProfileView(LoginRequiredMixin, DetailView):
+    """プロフィール関連ビューの基底クラス"""
 
     model = CustomUser
-    template_name = "profiles/my_tweets.html"
     context_object_name = "user_profile"
-    slug_field = "username"  # モデルのフィールド名
-    slug_url_kwarg = "username"  # urls.pyでのキーワード名
+    slug_field = "username"
+    slug_url_kwarg = "username"
     login_url = reverse_lazy("accounts:login")
+
+
+class MyTweetListView(BaseProfileView, FollowStatusMixin, TweetListMixin):
+    """自身のツイート一覧ビュー"""
+
+    template_name = "profiles/my_tweets.html"
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        # 現在のユーザー取得
-        current_user = self.object
-        # ログインユーザーがフォローしているか設定
-        context["is_followed_by_user"] = current_user.is_followed_by_user(
-            self.request.user
-        )
-        # ユーザーがフォロワーかどうか設定
-        context["is_following"] = self.request.user.is_followed_by_user(current_user)
-        # 投稿したツイートを取得
-        context["tweet_list"] = self.get_tweet_list(current_user.tweets)
+        follow_context = self.get_follow_context(user=self.object)
+        tweet_context = self.get_tweet_context(user=self.object)
+        context.update(**follow_context, **tweet_context)
         return context
 
+    def get_tweet_queryset(self, user):
+        return Tweet.get_my_tweets(user=user, requesting_user=self.request.user)
 
-class LikedTweetListView(LoginRequiredMixin, DetailView, TweetListMixin):
+
+class LikedTweetListView(BaseProfileView, FollowStatusMixin, TweetListMixin):
     """いいねしたツイート一覧ビュー"""
 
-    model = CustomUser
     template_name = "profiles/liked_tweets.html"
-    context_object_name = "user_profile"
-    slug_field = "username"
-    slug_url_kwarg = "username"
-    login_url = reverse_lazy("accounts:login")
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        # 現在のユーザー取得
-        current_user = self.object
-        # ログインユーザーがフォローしているか設定
-        context["is_followed_by_user"] = current_user.is_followed_by_user(
-            self.request.user
-        )
-        # ユーザーがフォロワーかどうか設定
-        context["is_following"] = self.request.user.is_followed_by_user(current_user)
-        # いいねしたツイートIDを取得するクエリセット作成
-        liked_tweet_ids = current_user.likes.values_list("tweet_id", flat=True)
-        # いいねしたツイートを取得
-        context["tweet_list"] = self.get_tweet_list(
-            Tweet.objects.filter(id__in=liked_tweet_ids).select_related("user")
-        )
+        follow_context = self.get_follow_context(user=self.object)
+        tweet_context = self.get_tweet_context(user=self.object)
+        context.update(**follow_context, **tweet_context)
         return context
 
+    def get_tweet_queryset(self, user):
+        return Tweet.get_liked_tweets(user=user, requesting_user=self.request.user)
 
-class RetweetedTweetListView(LoginRequiredMixin, DetailView, TweetListMixin):
+
+class RetweetedTweetListView(BaseProfileView, FollowStatusMixin, TweetListMixin):
     """リツイートしたツイート一覧ビュー"""
 
-    model = CustomUser
     template_name = "profiles/retweeted_tweets.html"
-    context_object_name = "user_profile"
-    slug_field = "username"
-    slug_url_kwarg = "username"
-    login_url = reverse_lazy("accounts:login")
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        # 現在のユーザー取得
-        current_user = self.object
-        # ログインユーザーがフォローしているか設定
-        context["is_followed_by_user"] = current_user.is_followed_by_user(
-            self.request.user
-        )
-        # ユーザーがフォロワーかどうか設定
-        context["is_following"] = self.request.user.is_followed_by_user(current_user)
-        # リツイートしたツイートIDを取得するクエリセット作成
-        retweeted_tweet_ids = current_user.retweets.values_list("tweet_id", flat=True)
-        # リツイートしたツイートを取得
-        context["tweet_list"] = self.get_tweet_list(
-            Tweet.objects.filter(id__in=retweeted_tweet_ids).select_related("user")
-        )
+        follow_context = self.get_follow_context(user=self.object)
+        tweet_context = self.get_tweet_context(user=self.object)
+        context.update(**follow_context, **tweet_context)
         return context
 
+    def get_tweet_queryset(self, user):
+        return Tweet.get_retweeted_tweets(user=user, requesting_user=self.request.user)
 
-class CommentedTweetListView(LoginRequiredMixin, DetailView, TweetListMixin):
+
+class CommentedTweetListView(BaseProfileView, FollowStatusMixin, TweetListMixin):
     """コメントしたツイート一覧ビュー"""
 
-    model = CustomUser
     template_name = "profiles/commented_tweets.html"
-    context_object_name = "user_profile"
-    slug_field = "username"
-    slug_url_kwarg = "username"
-    login_url = reverse_lazy("accounts:login")
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        # 現在のユーザー取得
-        current_user = self.object
-        # ログインユーザーがフォローしているか設定
-        context["is_followed_by_user"] = current_user.is_followed_by_user(
-            self.request.user
-        )
-        # ユーザーがフォロワーかどうか設定
-        context["is_following"] = self.request.user.is_followed_by_user(current_user)
-        # コメントしたツイートIDを取得するクエリセット作成
-        commented_tweet_ids = current_user.comments.values_list("tweet_id", flat=True)
-        # コメントしたツイートを取得
-        context["tweet_list"] = self.get_tweet_list(
-            Tweet.objects.filter(id__in=commented_tweet_ids).select_related("user")
-        )
+        follow_context = self.get_follow_context(user=self.object)
+        tweet_context = self.get_tweet_context(user=self.object)
+        context.update(**follow_context, **tweet_context)
         return context
+
+    def get_tweet_queryset(self, user):
+        return Tweet.get_commented_tweets(user=user, requesting_user=self.request.user)
 
 
 class ProfileEditView(
