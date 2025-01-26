@@ -1,6 +1,6 @@
 from django.db import models
 from accounts.models import CustomUser
-from tweets.models import Tweet
+from tweets.models import Tweet, Comment
 
 
 class AbstractCommon(models.Model):
@@ -51,13 +51,23 @@ class Notification(AbstractCommon):
         verbose_name="受信者",
     )
     tweet = models.ForeignKey(Tweet, on_delete=models.CASCADE)
+    comment = models.ForeignKey(
+        Comment,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="notifications",
+        verbose_name="コメント",
+    )
     is_read = models.BooleanField("既読フラグ", default=False)
 
     def __str__(self):
         return f"{self.notification_type}：{self.sender} -> {self.receiver}"
 
     @classmethod
-    def create_notification(cls, notification_type_name, sender, receiver, tweet):
+    def create_notification(
+        cls, notification_type_name, sender, receiver, tweet, comment=None
+    ):
         """通知情報を作成する処理"""
         notification_type = NotificationType.objects.get(name=notification_type_name)
         return cls.objects.create(
@@ -65,4 +75,5 @@ class Notification(AbstractCommon):
             sender=sender,
             receiver=receiver,
             tweet=tweet,
+            comment=comment,
         )

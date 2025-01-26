@@ -180,6 +180,7 @@ class CommentCreateView(CreateView):
                         sender=comment.user,
                         receiver=comment.tweet.user,
                         tweet=comment.tweet,
+                        comment=comment,
                     )
                 messages.success(
                     self.request,
