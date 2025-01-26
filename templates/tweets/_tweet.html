@@ -4,7 +4,7 @@
 
   <div class="d-flex">
     <!-- プロフィールへのリンク -->
-    <a href="{% url "profiles:my_tweet_list" tweet.user.username %}" class="position-relative z-2">
+    <a href="{% url "profiles:my_tweet_list" tweet.user.username %}" class="position-relative z-1">
       <img
         src="{{ tweet.user.icon_image_url }}"
         alt="ユーザーイメージ"
@@ -21,7 +21,7 @@
             @{{ tweet.user.username }}・{{ tweet.created_at|date:"m月d日 H:i" }}
           </small>
         </div>
-        <div class="btn-group z-3">
+        <div class="btn-group z-2">
           <button class="btn text-white" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
             <i class="bi bi-three-dots"></i>
           </button>

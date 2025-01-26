@@ -3,7 +3,12 @@
 {% block title %}プロフィールページ{% endblock title %}
 
 {% block content %}
-<div>
+<!-- ヘッダーエリア -->
+<div class="position-sticky top-0 z-3">
+  {% include "profiles/_header.html" %}
+</div>
+
+<div class="overflow-y-auto">
   <!-- プロフィールエリア -->
   <div>
     {% include "profiles/_user_profile.html" %}

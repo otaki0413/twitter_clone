@@ -1,26 +1,6 @@
 {% load humanize %}
-<!-- プロフィールヘッダー -->
-<div class="d-flex align-items-center px-3">
-  <div style="min-width: 56px">
-    <a href="{{ request.META.HTTP_REFERER }}" class="text-white">
-      <i class="bi bi-arrow-left"></i>
-    </a>
-  </div>
-  <div>
-    <div class="fs-5 fw-bold">
-      {% if user_profile.name %}
-        {{ user_profile.name }}
-      {% else %}
-        {{ user_profile.username }}
-      {% endif %}
-    </div>
-    <div class="text-secondary">
-      <span class="me-1">{{ user_profile.tweets.count|intcomma }}</span>件のツイート
-    </div>
-  </div>
-</div>
 
-<div class="border-top border-bottom border-secondary position-relative" style="height: 200px;">
+<div class="border-bottom border-secondary position-relative" style="height: 200px;">
   <!-- ヘッダー画像 -->
   {% if user_profile.header_image %}
     <img
