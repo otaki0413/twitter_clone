@@ -75,7 +75,7 @@ class Tweet(AbstractCommon):
     @classmethod
     def get_commented_tweets(cls, user, requesting_user=None):
         """コメントしたツイート一覧を取得する"""
-        commented_tweet_ids = user.likes.values_list("tweet", flat=True)
+        commented_tweet_ids = user.comments.values_list("tweet", flat=True)
         queryset = cls.get_base_queryset().filter(id__in=commented_tweet_ids)
         return cls.get_tweets_with_status(queryset, requesting_user)
 
