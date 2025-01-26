@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.db import transaction, IntegrityError
 from django.core.mail import send_mail
 from django.conf import settings
+from django.core.paginator import Paginator
 
 from .models import Tweet, Comment, Like, Retweet, Bookmark
 from notifications.models import Notification
@@ -69,12 +70,17 @@ class TweetCreateView(CreateView):
 
     model = Tweet
     form_class = TweetCreateForm
-    template_name = "tweets/_tweetform.html"
-    success_url = reverse_lazy("tweets:timeline")
 
     def get(self, request, *args, **kwargs):
-        # GETリクエスト時には一覧へリダイレクトさせる
-        return redirect("tweets:timeline")
+        # GETリクエスト時には直前のページへリダイレクト
+        return redirect(request.META.get("HTTP_REFERER", "tweets:timeline"))
+
+    def get_success_url(self):
+        # リファラーURLに応じて、リダイレクト先を切り替える
+        if "/following" in self.request.META.get("HTTP_REFERER", ""):
+            return reverse_lazy("tweets:following")
+        else:
+            return reverse_lazy("tweets:timeline")
 
     def form_valid(self, form):
         # フォームからインスタンス取得（※まだ保存しない）
@@ -91,13 +97,30 @@ class TweetCreateView(CreateView):
         return super().form_valid(form)
 
     def form_invalid(self, form):
+        # リファラーURLに応じた設定
+        if "/following" in self.request.META.get("HTTP_REFERER", ""):
+            queryset = Tweet.get_following_tweets(requesting_user=self.request.user)
+            template_name = "tweets/following.html"
+        else:
+            queryset = Tweet.get_timeline_tweets(requesting_user=self.request.user)
+            template_name = "tweets/index.html"
+
+        # ページネーター作成
+        paginator = Paginator(queryset, 5)
+        page_number = self.request.GET.get("page")
+        page_obj = paginator.get_page(page_number)
+
         # バリデーションエラー時の再描画用のコンテキスト生成
         context = {
             "form": form,
-            "tweet_list": Tweet.get_timeline_tweets(requesting_user=self.request.user),
+            "tweet_list": page_obj,
+            "page_obj": page_obj,
+            "paginator": paginator,
+            "is_paginated": True,
         }
-        # タイムラインページ再描画
-        return render(self.request, "tweets/index.html", context)
+
+        # ページ再描画
+        return render(self.request, template_name, context)
 
 
 class TweetDetailView(LoginRequiredMixin, DetailView):
