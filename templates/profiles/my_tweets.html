@@ -3,7 +3,12 @@
 {% block title %}プロフィールページ{% endblock title %}
 
 {% block content %}
-<div>
+<!-- ヘッダーエリア -->
+<div class="position-sticky top-0 z-3">
+  {% include "profiles/_header.html" %}
+</div>
+
+<div class="overflow-y-auto">
   <!-- プロフィールエリア -->
   <div>
     {% include "profiles/_user_profile.html" %}
@@ -12,8 +17,8 @@
   <div class="p-1 border-bottom border-secondary">
     {% include "profiles/_tabs.html" %}
   </div>
-  <!-- ツイート一覧 -->
-  <div class="overflow-y-auto">
+  <!-- ツイート一覧エリア -->
+  <div>
     {% if tweet_list %}
       {% for tweet in tweet_list %}
         {% include "tweets/_tweet.html" %}

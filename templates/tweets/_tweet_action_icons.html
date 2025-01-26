@@ -5,7 +5,7 @@
   <i class="bi bi-chat"></i>
 
   <!-- リツイート -->
-  <form method="POST" action="{% url 'tweets:retweet_toggle' %}" class="z-2">
+  <form method="POST" action="{% url 'tweets:retweet_toggle' %}" class="z-1">
     {% csrf_token %}
     <input type="hidden" name="tweet_id" value="{{ tweet.id }}" />
     <button
@@ -18,7 +18,7 @@
   </form>
 
   <!-- いいね -->
-  <form method="POST" action="{% url 'tweets:like_toggle' %}" class="z-2">
+  <form method="POST" action="{% url 'tweets:like_toggle' %}" class="z-1">
     {% csrf_token %}
     <input type="hidden" name="tweet_id" value="{{ tweet.id }}" />
     <button
@@ -35,7 +35,7 @@
   </form>
 
   <!-- ブックマーク -->
-  <form method="POST" action="{% url 'tweets:bookmark_toggle' %}" class="z-2">
+  <form method="POST" action="{% url 'tweets:bookmark_toggle' %}" class="z-1">
     {% csrf_token %}
     <input type="hidden" name="tweet_id" value="{{ tweet.id }}" />
     <button
@@ -51,7 +51,6 @@
     </button>
   </form>
 
-  <i class="bi bi-upload"></i>
 </div>
 
 <!-- アイコンホバー時のテキスト色 -->

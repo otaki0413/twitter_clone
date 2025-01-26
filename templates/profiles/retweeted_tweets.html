@@ -3,7 +3,12 @@
 {% block title %}リツイートしたツイート{% endblock title %}
 
 {% block content %}
-<div>
+<!-- ヘッダーエリア -->
+<div class="position-sticky top-0 z-3">
+  {% include "profiles/_header.html" %}
+</div>
+
+<div class="overflow-y-auto">
   <!-- プロフィールエリア -->
   <div>
     {% include "profiles/_user_profile.html" %}
@@ -13,7 +18,7 @@
     {% include "profiles/_tabs.html" %}
   </div>
   <!-- ツイート一覧エリア -->
-  <div class="overflow-y-auto">
+  <div>
     {% if tweet_list %}
       {% for tweet in tweet_list %}
         {% include "tweets/_tweet.html" %}
