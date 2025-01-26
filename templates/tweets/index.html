@@ -3,14 +3,15 @@
 {% block title %}ホームページ{% endblock title %}
 
 {% block content %}
-<div class="p-1 border-bottom border-secondary">
+<div class="p-1 border-bottom border-secondary bg-dark sticky-top">
   {% include "tweets/_tabs.html" %}
 </div>
 <div class="p-3 pb-2 border-bottom border-secondary">
   {% include "tweets/_tweetform.html" %}
 </div>
-<div>
-  <!-- ツイート一覧 -->
+
+<!-- ツイート一覧 -->
+<div class="overflow-y-auto">
   {% if tweet_list %}
     {% for tweet in tweet_list  %}
       {% include "tweets/_tweet.html" %}

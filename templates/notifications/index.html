@@ -3,7 +3,7 @@
 {% block title %}通知一覧ページ{% endblock title %}
 
 {% block content %}
-<div class="px-3 border-bottom border-secondary">
+<div class="px-3 border-bottom border-secondary bg-dark sticky-top">
   <!-- ヘッダーエリア -->
   <div class="d-flex align-items-center" style="height: 54px">
     <div style="min-width: 56px">
@@ -17,8 +17,8 @@
   </div>
 </div>
 
-<!-- 通知一覧 -->
-<div>
+<div class="overflow-y-auto">
+  <!-- 通知一覧 -->
   {% if notification_list %}
     {% for item in notification_list %}
       {% include "notifications/_notification_item.html" %}

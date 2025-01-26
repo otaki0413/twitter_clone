@@ -3,8 +3,8 @@
 {% block title %}ブックマークページ{% endblock title %}
 
 {% block content %}
-<div class="px-3 border-bottom border-secondary">
-  <!-- ヘッダーエリア -->
+<!-- ヘッダーエリア -->
+<div class="px-3 border-bottom border-secondary bg-dark sticky-top">
   <div class="d-flex align-items-center" style="height: 54px">
     <div style="min-width: 56px">
       <a href="{{ request.META.HTTP_REFERER }}" class="text-white">
@@ -17,8 +17,8 @@
   </div>
 </div>
 
-<!-- ブックマーク一覧 -->
-<div>
+<div class="overflow-y-auto">
+  <!-- ブックマーク一覧 -->
   {% if tweet_list  %}
     {% for tweet in tweet_list  %}
       {% include "tweets/_tweet.html" %}
