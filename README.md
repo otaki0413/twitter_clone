@@ -1,4 +1,27 @@
-# テーブル設計
+
+# Twitterクローンアプリ（Django × Docker）
+
+DjangoとDockerを活用して、Twitterの基本機能を再現したクローンアプリです。
+ユーザー認証、ツイート、DM、通知などSNSに必要な主要機能を網羅しており、スクールの課題として設計・実装しました。
+
+## 🔧 使用技術
+- **言語**：Python
+- **フレームワーク**：Django
+- **データベース**：PostgreSQL
+- **画像ストレージ**：Cloudinary（ユーザーアイコンなどをアップロード）
+- **開発環境**：Docker / Docker Compose
+- **デプロイ**：Heroku
+
+
+## 🔑 実装機能
+- サインアップ・ログイン（GitHubログイン）
+- ツイートの投稿・いいね・リツイート・ブックマーク
+- ユーザーのフォロー
+- ダイレクトメッセージ（DM）
+- 通知（いいね、フォロー、DMなど）
+- プロフィール編集
+
+## 🗃️ テーブル設計
 ```mermaid
 ---
 title: "TwitterクローンER図"
@@ -110,26 +133,7 @@ erDiagram
     }
 ```
 
-
-# 環境構築
-
-
-## .envを作成し、以下を記載
-
-SECRET_KEYは自身で生成する
-
-[【Django】settings.pyのSECRET_KEYを再発行(リジェネレート)する](https://noauto-nolife.com/post/django-secret-key-regenerate/)
-
-```.env
-DATABASE_URL="postgres://postgres:postgres@db:5432/django_develop"
-SECRET_KEY=<自身で生成したものを使う>
-```
-
-## dockerを立ち上げる
-
-```
-docker-compose up
-```
-
-ブラウザで[localhost:3000/hello](http://localhost:3000/hello)にアクセスし、以下の画面が表示されたら、構築完了。
-![セットアップ完了後の画面](./static/setup_completed.png)
+## 学んだこと
+- Djangoのクラスベースビューを用いて、MVT構造を意識した保守性の高いルーティングとロジック分離方法について学んだ。
+- 外部ストレージとしてCloudinaryをアプリ連携する方法について学んだ。
+- Herokuデプロイでは環境変数、PostgreSQLとの接続、静的ファイルの取り扱いを経験できた。
